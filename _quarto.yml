@@ -4,11 +4,11 @@ project:
   execute-dir: project
 
 website:
-  title: "Modèles hiérarchiques pour les sciences de la vie"
+  title: "Connecting theory to data: Introduction to Bayesian statistics for ecologists"
   navbar:
     tools:
       - icon: github
-        href: https://github.com/bios2/hiermod
+        href: https://github.com/aammd/bayes-ecology-csee2026
 
 format:
   html:

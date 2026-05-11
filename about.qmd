@@ -1,30 +1,19 @@
 ---
-title: Advanced Statistics and hierarchical models
+title: Bayesian statistics for ecology
 about:
   template: marquee
   image: assets/sbl_frog.jpg
   links:
     - icon: github
       text: github
-      href: https://github.com/bios2/hiermod2023
-    - icon: envelope
-      text: email
-      href: mailto:guillaume.blanchet@usherbrooke.ca
-    - icon: geo-alt
-      text: location
-      href: https://www.openstreetmap.org/node/4498467100#map=18/45.98824/-74.00468
 ---
 
-## 8-12 May 2023
 
-## Cibles de formation
 
-Apprendre la théorie statistique pour mieux construire, appliquer et interpréter différents modèles statistiques appliqués à des systèmes biologiques. Devenir familier avec la recherche primaire en en modélisation statistique de systèmes biologiques. Développer des connaissances et gagner de l'expérience à travailler de façon collaborative sur des problématiques lié au développement et à l'application de méthodes statisiques.
 
-This course will feature hierarchical models and spatial statistics.
+## Descent with modification
 
-## Course Instructors
-
+Much of this material was developed for the University of Sherbrooke course [Advanced Statistics and hierarchical models](), which was written and delivered by Guillaume Blanchet and Andrew MacDonald
 
 ::: {layout-ncol=2}
 ![[Dr Guillaume 

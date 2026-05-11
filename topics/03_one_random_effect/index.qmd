@@ -370,7 +370,7 @@ hierarchical_groups
 
 :::
 
-
+`
 
 ```{r}
 hierarchical_groups_samples <- sampling(hierarchical_groups,

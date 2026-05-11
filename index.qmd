@@ -1,103 +1,129 @@
 ---
-title: "Course contents"
+title: "Outline for the day"
 ---
 
-[Daily schedule](topics/schedule)
 
-[Link to Shared notes document](https://docs.google.com/document/d/1NVsqYIkMEB7tPHKhiq6b75KaArL5OVNJvGWs47jMAo8/edit?usp=sharing)
 
-## Day 1: Introduction, data simulation, discrete models
+<!-- TODO add installation how-to here  -->
 
-[Course Syllabus](PlanDeCoursBIO709.pdf)
+# Before we start
 
-:::: {.columns}
+<!--
+## Posit Cloud
 
-::: {.column width="50%"}
+We are running this workshop on **Posit Cloud**. Everything is already installed. Open the shared project link you received and you will land in a ready-to-use RStudio environment.
+--> 
+
+The goal of this workshop is to introduce you to Bayesian statistics using Stan.  My hope is that you leave with not only knowledge, but a working software envionment for doing your own work. Please install the required packages with:
+
+```{r}
+#| eval: false
+install.packages(c(
+  "tidyverse",
+  "rstan",
+  "brms",
+  "bayesplot",
+  "tidybayes",
+  "posterior",
+  "palmerpenguins",
+  "vegan"
+), dependencies = TRUE)
+```
+
+## Load packages
+
+```{r}
+#| label: setup
+library(tidyverse)
+library(rstan)
+library(brms)
+library(bayesplot)
+library(tidybayes)
+library(posterior)
+library(palmerpenguins)
+
+rstan_options(auto_write = TRUE)          # avoid recompiling unchanged models
+options(mc.cores = parallel::detectCores())  # sample chains in parallel
+bayesplot::color_scheme_set("brightblue")
+```
+
+## Why Bayesian statistics for ecologists?
+
+Have you ever found yourself with a detailed ecological dataset and a hypothesis you are excited
+to test, but struggled to find a standard statistical procedure that fits?
+Bayesian statistics are exciting for ecologists because they let you design a model that meets
+the full complexity of your data and your ecological ideas.
+
+Three ideas underpin everything in this workshop:
+
+- **Probability as a language for uncertainty.** We assign probability distributions to everything
+  we do not yet know: parameters, future observations, missing data.
+- **Bayes' theorem** updates prior beliefs about parameters with the evidence in the data to
+  produce a *posterior* distribution.
+- **Generative models.** Because a Bayesian model is a complete probability model of the
+  data-generating process, we can *simulate* from it. This makes model checking visual and
+  intuitive.
+
+$$
+\underbrace{p(\theta \mid y)}_{\text{posterior}}
+\;\propto\;
+\underbrace{p(y \mid \theta)}_{\text{likelihood}}
+\;\times\;
+\underbrace{p(\theta)}_{\text{prior}}
+$$
+
+## The toolkit
+
+Stan is a language and software distinct from R. It has a large a diverse community around it. I'm going to focus on two ways of interacting with it, but there are four::
+
+| Tool | What it does | When to use |
+|---|---|---|
+| **Stan / rstan** | Writes, compiles, and samples models | Full control! You can use this to create a huge range of models|
+| **brms** | Generates Stan code from an extension of lme4 formula syntax | great way to develop ideas, accessible because of the formula interface |
+| **rstanarm** | pre-compiled models and a drop-in replacement for lme4 | fast, lightweight |
+| **Stan / cmdstanr** | Stan code is the same as for rstan, but R interface is a little different | Developed faster than rstan, a little more efficient, a little harder to install |
+
+
+Every model in this workshop is shown first in raw Stan via rstan, then as a brms shortcut.
+After the workshop, you may prefer cmdstan / CmdStanR for a more cutting-edge experience.
+
+
+
+Opening exercise: simulation
+
+slides: Intro to Andrew, why bayes, Stan history, 4 reasons to bayes (contains likelihood already)
+[Stan and HMC](slides/03_Stan) 
+[Data we'll be using](slides/01_Data)
+
+
+Tutorial: [Simulation and model fitting in Stan](topics/01_simulation)
+
+
+[Bayesian and MCMC](slides/02_Bayesian)
+
+
 
 ### Slides
-* [Introduction to the course and location](slides/00_Introduction)
-* [Probability Distributions](slides/02_5_Distribution)
-
-:::
-
-::: {.column width="50%"}
-
-### Exercises -- data simulation & discrete models
-* [Catch a wild Distribution](topics/00_distributions)
-
-:::
-
-::::
-
-:::{.callout-important}
-### Monday night Stan installation session! 
-To use Stan in R, the `rstan` R package is needed. To install it, follow the steps [in this vignette](https://github.com/stan-dev/rstan/wiki/RStan-Getting-Started). Make sure you can run the example in the **Verifying Installation**
-
-If you have not yet managed to install Stan and `rstan`, Andrew and Guillaume will be available on **Monday evening**. From Tuesday onwards we won't have time to pause to fix installation issues!
-:::
+[Introduction to the course and location](slides/00_Introduction)
+[Probability Distributions](slides/02_5_Distribution)
 
 
-## DAY 2: Intro to Stan and Regression
-
-:::: {.columns}
-
-::: {.column width="50%"}
-### Slides
-* [Bayesian and MCMC](slides/02_Bayesian)
-* [Stan and HMC](slides/03_Stan)
-* [Linear models](slides/04_Linear_model)
-* [Data we'll be using](slides/01_Data)
-
-:::
-
-::: {.column width="50%"}
-### Exercises
-* [Simulation and model fitting in Stan](topics/01_simulation)
-* [Discrete predictors](topics/discrete_predictor)
-
-:::
-
-::::
+keep only the parts about how to write a linear model and how to write a GLM
+[Linear models](slides/04_Linear_model)
 
 
-## Day 3: Hierarchical models
+Tutorial: [Regression with discrete predictors](topics/discrete_predictor)
 
-:::: {.columns}
+[Linear regression](topics/02_regression)
 
-::: {.column width="50%"}
-### Slides
-* [Simple hierarchical models](slides/06_Simple_hierarchical_model)
-* [Complex hierarchical models](slides/08_Complex_hierarchical_model)
 
-:::
+***BREAK***
 
-::: {.column width="50%"}
-### Exercises
+Optional content! Choose your own adventure! 
 
-* [Linear regression](topics/02_regression)
 * [Hierarchy on the intercept](topics/03_one_random_effect)
-* [Intercept-Only Model (and tidybayes discussion)](topics/intercept_only)
-* [Hierarchy on the slope](topics/correlated_effects)
+* [Variance partitionin with intercept-only models (and tidybayes discussion)](topics/intercept_only)
+* [Hierarchy on the slope -- partial pooling demonstration](topics/correlated_effects)
+* [Estimating functions from data - Gaussian processes in Stan](topics/04_gp)
+* [Phylogenetic regression and missing data](topics/04-phylo)
 
-:::
-
-::::
-
-
-
-## Day 4: Constrained models: Gaussian processes
-
-:::: {.columns}
-
-::: {.column width="50%"}
-
-* [Slides](slides/09_Gaussian_process)
-
-:::
-
-::: {.column width="50%"}
-* [A Practical demonstration in Stan](topics/04_gp)
-* [Phylogeny](topics/04-phylo)
-:::
-
-::::

@@ -12,7 +12,6 @@ editor_options:
 ---
 
 In this section we're going to look at models with one discrete predictor. 
-You may have encountered this kind of model with discrete predictors. 
 
 ## Load packages and data
 

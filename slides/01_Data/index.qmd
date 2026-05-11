@@ -54,7 +54,7 @@ Sampling was carried out in June 1989 on the partially floating vegetation mat s
 
 Oribatid mites are small (usually ranging in size from 0.2 to 1.4 mm) invertebrates that are part of the **Arachnida** class (so they have 8 legs).
 
-![](../img/Oribatid.jpg){fig-align="center"}
+![](../../img/Oribatid.jpg){fig-align="center"}
 
 . . .
 
