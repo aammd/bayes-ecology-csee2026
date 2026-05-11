@@ -7,6 +7,9 @@
 # rstan models  → saved as <model>.rds via auto_write = TRUE
 # cmdstanr models → compiled executable saved in the same directory
 #
+# !! Posit Cloud: set project RAM to at least 4GB (8GB recommended) in
+#    project Settings → Resources before running this script. !!
+#
 # Usage (from project root):
 #   source("compile_stan_models.R")
 

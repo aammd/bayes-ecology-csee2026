@@ -4,14 +4,7 @@
     "href": "index.html",
     "title": "Outline for the day",
     "section": "",
-    "text": "The goal of this workshop is to introduce you to Bayesian statistics using Stan. My hope is that you leave with not only knowledge, but a working software envionment for doing your own work. Please install the required packages with:\n\ninstall.packages(c(\n  \"tidyverse\",\n  \"rstan\",\n  \"brms\",\n  \"bayesplot\",\n  \"tidybayes\",\n  \"posterior\",\n  \"palmerpenguins\",\n  \"vegan\"\n), dependencies = TRUE)\n\n\n\n\nlibrary(tidyverse)\nlibrary(rstan)\n\nLoading required package: StanHeaders\n\n\n\nrstan version 2.32.7 (Stan version 2.32.2)\n\n\nFor execution on a local, multicore CPU with excess RAM we recommend calling\noptions(mc.cores = parallel::detectCores()).\nTo avoid recompilation of unchanged Stan programs, we recommend calling\nrstan_options(auto_write = TRUE)\nFor within-chain threading using `reduce_sum()` or `map_rect()` Stan functions,\nchange `threads_per_chain` option:\nrstan_options(threads_per_chain = 1)\n\n\n\nAttaching package: 'rstan'\n\n\nThe following object is masked from 'package:tidyr':\n\n    extract\n\nlibrary(brms)\n\nLoading required package: Rcpp\n\n\nLoading 'brms' package (version 2.23.0). Useful instructions\ncan be found by typing help('brms'). A more detailed introduction\nto the package is available through vignette('brms_overview').\n\n\n\nAttaching package: 'brms'\n\n\nThe following object is masked from 'package:rstan':\n\n    loo\n\n\nThe following object is masked from 'package:stats':\n\n    ar\n\nlibrary(bayesplot)\n\nThis is bayesplot version 1.14.0\n\n\n- Online documentation and vignettes at mc-stan.org/bayesplot\n\n\n- bayesplot theme set to bayesplot::theme_default()\n\n\n   * Does _not_ affect other ggplot2 plots\n\n\n   * See ?bayesplot_theme_set for details on theme setting\n\n\n\nAttaching package: 'bayesplot'\n\n\nThe following object is masked from 'package:brms':\n\n    rhat\n\nlibrary(tidybayes)\n\n\nAttaching package: 'tidybayes'\n\n\nThe following objects are masked from 'package:brms':\n\n    dstudent_t, pstudent_t, qstudent_t, rstudent_t\n\nlibrary(posterior)\n\nThis is posterior version 1.6.1\n\n\n\nAttaching package: 'posterior'\n\n\nThe following object is masked from 'package:bayesplot':\n\n    rhat\n\n\nThe following objects are masked from 'package:rstan':\n\n    ess_bulk, ess_tail\n\n\nThe following objects are masked from 'package:stats':\n\n    mad, sd, var\n\n\nThe following objects are masked from 'package:base':\n\n    %in%, match\n\nlibrary(palmerpenguins)\n\n\nAttaching package: 'palmerpenguins'\n\n\nThe following objects are masked from 'package:datasets':\n\n    penguins, penguins_raw\n\nrstan_options(auto_write = TRUE)          # avoid recompiling unchanged models\noptions(mc.cores = parallel::detectCores())  # sample chains in parallel\nbayesplot::color_scheme_set(\"brightblue\")\n\n\n\n\nHave you ever found yourself with a detailed ecological dataset and a hypothesis you are excited to test, but struggled to find a standard statistical procedure that fits? Bayesian statistics are exciting for ecologists because they let you design a model that meets the full complexity of your data and your ecological ideas.\nThree ideas underpin everything in this workshop:\n\nProbability as a language for uncertainty. We assign probability distributions to everything we do not yet know: parameters, future observations, missing data.\nBayes’ theorem updates prior beliefs about parameters with the evidence in the data to produce a posterior distribution.\nGenerative models. Because a Bayesian model is a complete probability model of the data-generating process, we can simulate from it. This makes model checking visual and intuitive.\n\n\\[\n\\underbrace{p(\\theta \\mid y)}_{\\text{posterior}}\n\\;\\propto\\;\n\\underbrace{p(y \\mid \\theta)}_{\\text{likelihood}}\n\\;\\times\\;\n\\underbrace{p(\\theta)}_{\\text{prior}}\n\\]\n\n\n\nStan is a language and software distinct from R. It has a large a diverse community around it. I’m going to focus on two ways of interacting with it, but there are four::\n\n\n\n\n\n\n\n\nTool\nWhat it does\nWhen to use\n\n\n\n\nStan / rstan\nWrites, compiles, and samples models\nFull control! You can use this to create a huge range of models\n\n\nbrms\nGenerates Stan code from an extension of lme4 formula syntax\ngreat way to develop ideas, accessible because of the formula interface\n\n\nrstanarm\npre-compiled models and a drop-in replacement for lme4\nfast, lightweight\n\n\nStan / cmdstanr\nStan code is the same as for rstan, but R interface is a little different\nDeveloped faster than rstan, a little more efficient, a little harder to install\n\n\n\nEvery model in this workshop is shown first in raw Stan via rstan, then as a brms shortcut. After the workshop, you may prefer cmdstan / CmdStanR for a more cutting-edge experience.\nOpening exercise: simulation\nslides: Intro to Andrew, why bayes, Stan history, 4 reasons to bayes (contains likelihood already) Stan and HMC Data we’ll be using\nTutorial: Simulation and model fitting in Stan\nBayesian and MCMC\n\n\nIntroduction to the course and location Probability Distributions\nkeep only the parts about how to write a linear model and how to write a GLM Linear models\nTutorial: Regression with discrete predictors\nLinear regression\nBREAK\nOptional content! Choose your own adventure!\n\nHierarchy on the intercept\nVariance partitionin with intercept-only models (and tidybayes discussion)\nHierarchy on the slope – partial pooling demonstration\nEstimating functions from data - Gaussian processes in Stan\nPhylogenetic regression and missing data"
-  },
-  {
-    "objectID": "index.html#load-packages",
-    "href": "index.html#load-packages",
-    "title": "Outline for the day",
-    "section": "",
-    "text": "library(tidyverse)\nlibrary(rstan)\n\nLoading required package: StanHeaders\n\n\n\nrstan version 2.32.7 (Stan version 2.32.2)\n\n\nFor execution on a local, multicore CPU with excess RAM we recommend calling\noptions(mc.cores = parallel::detectCores()).\nTo avoid recompilation of unchanged Stan programs, we recommend calling\nrstan_options(auto_write = TRUE)\nFor within-chain threading using `reduce_sum()` or `map_rect()` Stan functions,\nchange `threads_per_chain` option:\nrstan_options(threads_per_chain = 1)\n\n\n\nAttaching package: 'rstan'\n\n\nThe following object is masked from 'package:tidyr':\n\n    extract\n\nlibrary(brms)\n\nLoading required package: Rcpp\n\n\nLoading 'brms' package (version 2.23.0). Useful instructions\ncan be found by typing help('brms'). A more detailed introduction\nto the package is available through vignette('brms_overview').\n\n\n\nAttaching package: 'brms'\n\n\nThe following object is masked from 'package:rstan':\n\n    loo\n\n\nThe following object is masked from 'package:stats':\n\n    ar\n\nlibrary(bayesplot)\n\nThis is bayesplot version 1.14.0\n\n\n- Online documentation and vignettes at mc-stan.org/bayesplot\n\n\n- bayesplot theme set to bayesplot::theme_default()\n\n\n   * Does _not_ affect other ggplot2 plots\n\n\n   * See ?bayesplot_theme_set for details on theme setting\n\n\n\nAttaching package: 'bayesplot'\n\n\nThe following object is masked from 'package:brms':\n\n    rhat\n\nlibrary(tidybayes)\n\n\nAttaching package: 'tidybayes'\n\n\nThe following objects are masked from 'package:brms':\n\n    dstudent_t, pstudent_t, qstudent_t, rstudent_t\n\nlibrary(posterior)\n\nThis is posterior version 1.6.1\n\n\n\nAttaching package: 'posterior'\n\n\nThe following object is masked from 'package:bayesplot':\n\n    rhat\n\n\nThe following objects are masked from 'package:rstan':\n\n    ess_bulk, ess_tail\n\n\nThe following objects are masked from 'package:stats':\n\n    mad, sd, var\n\n\nThe following objects are masked from 'package:base':\n\n    %in%, match\n\nlibrary(palmerpenguins)\n\n\nAttaching package: 'palmerpenguins'\n\n\nThe following objects are masked from 'package:datasets':\n\n    penguins, penguins_raw\n\nrstan_options(auto_write = TRUE)          # avoid recompiling unchanged models\noptions(mc.cores = parallel::detectCores())  # sample chains in parallel\nbayesplot::color_scheme_set(\"brightblue\")"
+    "text": "The goal of this workshop is to introduce you to Bayesian statistics using Stan. My hope is that you leave with not only knowledge, but a working software envionment for doing your own work. Please install the required packages with:\n\ninstall.packages(c(\n  \"tidyverse\",\n  \"rstan\",\n  \"brms\",\n  \"bayesplot\",\n  \"tidybayes\",\n  \"posterior\",\n  \"palmerpenguins\",\n  \"vegan\"\n), dependencies = TRUE)\n\n\n\nHave you ever found yourself with a detailed ecological dataset and a hypothesis you are excited to test, but struggled to find a standard statistical procedure that fits? Bayesian statistics are exciting for ecologists because they let you design a model that meets the full complexity of your data and your ecological ideas.\nThree ideas underpin everything in this workshop:\n\nProbability as a language for uncertainty. We assign probability distributions to everything we do not yet know: parameters, future observations, missing data.\nBayes’ theorem updates prior beliefs about parameters with the evidence in the data to produce a posterior distribution.\nGenerative models. Because a Bayesian model is a complete probability model of the data-generating process, we can simulate from it. This makes model checking visual and intuitive.\n\n\\[\n\\underbrace{p(\\theta \\mid y)}_{\\text{posterior}}\n\\;\\propto\\;\n\\underbrace{p(y \\mid \\theta)}_{\\text{likelihood}}\n\\;\\times\\;\n\\underbrace{p(\\theta)}_{\\text{prior}}\n\\]\n\n\n\nStan is a language and software distinct from R. It has a large a diverse community around it. I’m going to focus on two ways of interacting with it, but there are four::\n\n\n\n\n\n\n\n\nTool\nWhat it does\nWhen to use\n\n\n\n\nStan / rstan\nWrites, compiles, and samples models\nFull control! You can use this to create a huge range of models\n\n\nbrms\nGenerates Stan code from an extension of lme4 formula syntax\ngreat way to develop ideas, accessible because of the formula interface\n\n\nrstanarm\npre-compiled models and a drop-in replacement for lme4\nfast, lightweight\n\n\nStan / cmdstanr\nStan code is the same as for rstan, but R interface is a little different\nDeveloped faster than rstan, a little more efficient, a little harder to install\n\n\n\nThe models in this workshop are made with a mix of these methods, mostly Stan and run in R via Rstan. There are also examples with brms as well.\nAfter the workshop, you may prefer cmdstan / CmdStanR for a more up-to-date experience.\nOpening slides: Stan and HMC Data we’ll be using\nTutorial: Simulation and model fitting in Stan\nBonus content: Probability Distributions, courtesy of Guillaume Blanchet!\nTutorial: Regression with discrete predictors\nTutorial and capstone exercise: Linear regression\nBREAK\nOptional content! Choose your own adventure!\n\nHierarchy on the intercept\nVariance partitionin with intercept-only models (and tidybayes discussion)\nHierarchy on the slope – partial pooling demonstration\nEstimating functions from data - Gaussian processes in Stan\nPhylogenetic regression and missing data\nNonlinear models of growth\nArtisanal model for zero-inflated aphid population growth"
   },
   {
     "objectID": "index.html#why-bayesian-statistics-for-ecologists",
@@ -25,7 +18,7 @@
     "href": "index.html#the-toolkit",
     "title": "Outline for the day",
     "section": "",
-    "text": "Stan is a language and software distinct from R. It has a large a diverse community around it. I’m going to focus on two ways of interacting with it, but there are four::\n\n\n\n\n\n\n\n\nTool\nWhat it does\nWhen to use\n\n\n\n\nStan / rstan\nWrites, compiles, and samples models\nFull control! You can use this to create a huge range of models\n\n\nbrms\nGenerates Stan code from an extension of lme4 formula syntax\ngreat way to develop ideas, accessible because of the formula interface\n\n\nrstanarm\npre-compiled models and a drop-in replacement for lme4\nfast, lightweight\n\n\nStan / cmdstanr\nStan code is the same as for rstan, but R interface is a little different\nDeveloped faster than rstan, a little more efficient, a little harder to install\n\n\n\nEvery model in this workshop is shown first in raw Stan via rstan, then as a brms shortcut. After the workshop, you may prefer cmdstan / CmdStanR for a more cutting-edge experience.\nOpening exercise: simulation\nslides: Intro to Andrew, why bayes, Stan history, 4 reasons to bayes (contains likelihood already) Stan and HMC Data we’ll be using\nTutorial: Simulation and model fitting in Stan\nBayesian and MCMC\n\n\nIntroduction to the course and location Probability Distributions\nkeep only the parts about how to write a linear model and how to write a GLM Linear models\nTutorial: Regression with discrete predictors\nLinear regression\nBREAK\nOptional content! Choose your own adventure!\n\nHierarchy on the intercept\nVariance partitionin with intercept-only models (and tidybayes discussion)\nHierarchy on the slope – partial pooling demonstration\nEstimating functions from data - Gaussian processes in Stan\nPhylogenetic regression and missing data"
+    "text": "Stan is a language and software distinct from R. It has a large a diverse community around it. I’m going to focus on two ways of interacting with it, but there are four::\n\n\n\n\n\n\n\n\nTool\nWhat it does\nWhen to use\n\n\n\n\nStan / rstan\nWrites, compiles, and samples models\nFull control! You can use this to create a huge range of models\n\n\nbrms\nGenerates Stan code from an extension of lme4 formula syntax\ngreat way to develop ideas, accessible because of the formula interface\n\n\nrstanarm\npre-compiled models and a drop-in replacement for lme4\nfast, lightweight\n\n\nStan / cmdstanr\nStan code is the same as for rstan, but R interface is a little different\nDeveloped faster than rstan, a little more efficient, a little harder to install\n\n\n\nThe models in this workshop are made with a mix of these methods, mostly Stan and run in R via Rstan. There are also examples with brms as well.\nAfter the workshop, you may prefer cmdstan / CmdStanR for a more up-to-date experience.\nOpening slides: Stan and HMC Data we’ll be using\nTutorial: Simulation and model fitting in Stan\nBonus content: Probability Distributions, courtesy of Guillaume Blanchet!\nTutorial: Regression with discrete predictors\nTutorial and capstone exercise: Linear regression\nBREAK\nOptional content! Choose your own adventure!\n\nHierarchy on the intercept\nVariance partitionin with intercept-only models (and tidybayes discussion)\nHierarchy on the slope – partial pooling demonstration\nEstimating functions from data - Gaussian processes in Stan\nPhylogenetic regression and missing data\nNonlinear models of growth\nArtisanal model for zero-inflated aphid population growth"
   },
   {
     "objectID": "slides/08_Complex_hierarchical_model/index.html#hierarchical-model-structure-so-far",
@@ -1750,130 +1743,200 @@
     "text": "Simulation workout!\n\nmake a histogram of 500 numbers from a distribution!\n\nnormal\npoisson\nEXTRA try a new one, like beta, gamma, lognormal\n\nmake a histogram of poisson observations, using the classic log() link function.\n\n\\[\n\\begin{align}\ny &\\sim \\text{Poisson}(e^a) \\\\\na &\\sim \\text{Normal}(??, ??)\n\\end{align}\n\\]\n\n\n\n\n\n\nNoteTIP\n\n\n\n\n\n\n## sample poisson variables like this:\nrpois(500, exp(3))\n\n  [1] 24 14 30 23 22 23 23 10 12 16 15 22 19 24 25 20 16 27 25 18 19 23 14 24 34\n [26] 15 24 29 20 25 21 15 19 30 26 20 21 19 26 17 20 17 20 21 27 14 21 23 15 24\n [51] 28 25 15 14 15 20 29 11 23 24 12 19 22 17 23 12 13 23 25 13 29 11 25 23 23\n [76] 16 17 21 24 18 18 17 17 15 17 21 18 16 15 21 17 16 15 24 26 19 16 18 31 23\n[101] 18 19 20 17 15 19 20 19 15 24 19 21 24 14 17 17 25 19 16 17 26 12 17 22 20\n[126] 16 27 16 17 13 16 11 15 16 24 18 13 19 20 22 25 21 23 23 28 19 18 21 12 25\n[151] 19 17 17 17 19 21 22 28 13 24 11 19 19 22 22 22 27 21 22 11 26 22 21 21 21\n[176] 13 21 20 21 22 13 24 17 22 19 24 13 27 30 26 20 23 18 17 23 10 23 20 19 28\n[201] 32 17 17 18 21 24 16 15 26 24 15 16 21 29 23 28 16 18 16 12 34 19 21 24 19\n[226] 24 26 13 28 22 17 20 22 16 24 28 17 18 15 25 23 21 15 21 22 29 20 19 18 28\n[251] 21 15 21 30 30 17 28 21 16 19 22 16 21 16 22 15 15 26 25 27 23 28 20 16 14\n[276] 19 27 18 23 22 22 16 22 20  7 18 23 20 23 17 18 18 18 19 23 16 22 22 23 20\n[301] 22 19 16 20 20 22 21 24 23 19 20 24 20 29 20 19 24 29 15 14 21 20 29 22 17\n[326] 13 14 20 22 19 24 18 15 20 25 24 23 23 21 27 20 19 19 19 22 22 24 21 24 15\n[351] 21 16 26 18 21 23 21 19 16 24 25 15 18 22 20 20 28 18 26 13 21 17 18 26 23\n[376] 19 28 16 21 23 18 23 17 19 23 31 16 22 22 19 23 23 23 20 25 20 25 16 17 15\n[401] 22 23 23 21 14 26 15 19 23 16 19 28 31 24 19 21 17 19 22 12 22 19 24 23 18\n[426] 22 23 22 26 29 29 19 26 18 25 19 26 24 20 14 15 15 25 24 21 22 20 17 22 21\n[451] 20 16 21 21 20 26 19 24 21 26 17 23 15 17 17 14 14 18 21 12 28 13 10 18 16\n[476] 22 27 21 16 24 20 25 15 15 36 20 18 20 21 20 14 23 15 18 22 22 13 21 16 18\n\n\n\n\n\n\nmake a histogram of Binomial observations, using the inverse logit link function\n\n\\[\n\\begin{align}\ny &\\sim \\text{Binomial}\\left(\\frac{1}{1+e^{-a}}, N \\right) \\\\\na &\\sim \\text{Normal}(??, ??)\n\\end{align}\n\\]\nHere’s a plot of the link function, to help you think about it:\n\ncurve(1 / (1 + exp(-x)), xlim = c(-3, 3), ylim = c(0, 1))\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nNoteTIP\n\n\n\n\n\n\na &lt;- rnorm(1, mean = 0, 1)\nhist(rbinom(n = 500, size = 50, prob = 1 / (1 + exp(-a))))"
   },
   {
-    "objectID": "slides/03_Stan/index.html#what-is-the-point-of-this",
-    "href": "slides/03_Stan/index.html#what-is-the-point-of-this",
-    "title": "Stan",
-    "section": "What is the point of this?",
-    "text": "What is the point of this?\n\\[\n\\begin{equation}\nP(A|B) = \\frac{P(B|A) \\cdot P(A)}{P(B)}\n\\end{equation}\n\\]"
+    "objectID": "slides/03_Stan/index.html#opening-exercise",
+    "href": "slides/03_Stan/index.html#opening-exercise",
+    "title": "Connecting theory to data: Introduction to Bayesian statistics for ecologists",
+    "section": "Opening Exercise",
+    "text": "Opening Exercise\nLet’s warm up with a quick simulation exercise!\n\nopen up Rstudio\nChoose a statistical distribution of interest - maybe even one that isn’t the Normal Distribution!\nSimulate data from the chosen distribution\nMake a histogram of these random numbers\nTurn to your neighbour and discuss what biological phenomenon might result in these kinds of values."
   },
   {
-    "objectID": "slides/03_Stan/index.html#what-is-the-point-of-this-1",
-    "href": "slides/03_Stan/index.html#what-is-the-point-of-this-1",
-    "title": "Stan",
-    "section": "What is the point of this",
-    "text": "What is the point of this\n\\[\n\\begin{equation}\nP(\\boldsymbol{\\theta}|\\text{data}) = \\frac{P(\\boldsymbol{\\text{data}|\\theta}) \\cdot P(\\boldsymbol{\\theta})}{P(\\text{data})}\n\\end{equation}\n\\]"
+    "objectID": "slides/03_Stan/index.html#outline-for-today",
+    "href": "slides/03_Stan/index.html#outline-for-today",
+    "title": "Connecting theory to data: Introduction to Bayesian statistics for ecologists",
+    "section": "Outline for today",
+    "text": "Outline for today\n\nBrief introduction to the Why and How of writing Bayesian models in Stan\n\nBREAK\n\nChoose Your Own Adventure: either work on exercises in an area of interest to you, or write your own Bayesian model for your data!"
   },
   {
-    "objectID": "slides/03_Stan/index.html#what-is-the-point-of-this-2",
-    "href": "slides/03_Stan/index.html#what-is-the-point-of-this-2",
-    "title": "Stan",
-    "section": "What is the point of this",
-    "text": "What is the point of this\n\\[\n\\begin{equation}\nP(\\boldsymbol{\\theta}|\\text{data}) \\propto P(\\boldsymbol{\\text{data}|\\theta}) \\cdot P(\\boldsymbol{\\theta})\n\\end{equation}\n\\]"
+    "objectID": "slides/03_Stan/index.html#quick-personal-introduction",
+    "href": "slides/03_Stan/index.html#quick-personal-introduction",
+    "title": "Connecting theory to data: Introduction to Bayesian statistics for ecologists",
+    "section": "Quick personal introduction",
+    "text": "Quick personal introduction\n\n\n\nField ecologist turned statistican\nstarted off in insect-plant interactions, has now done:\n\nfish populations\nkangaroo life history\nfly mating behaviour\nanimal personality\n\nMostly a Bayesian\nPlease introduce yourselves and your projects!"
+  },
+  {
+    "objectID": "slides/03_Stan/index.html#statistical-rethinking",
+    "href": "slides/03_Stan/index.html#statistical-rethinking",
+    "title": "Connecting theory to data: Introduction to Bayesian statistics for ecologists",
+    "section": "Statistical Rethinking",
+    "text": "Statistical Rethinking\n\nThis workshop is based on this book! it is a fabulous guide to self-teaching!\nSee also Richard’s awesome Youtube videos"
+  },
+  {
+    "objectID": "slides/03_Stan/index.html#bayesian-data-analysis",
+    "href": "slides/03_Stan/index.html#bayesian-data-analysis",
+    "title": "Connecting theory to data: Introduction to Bayesian statistics for ecologists",
+    "section": "Bayesian Data Analysis",
+    "text": "Bayesian Data Analysis\n\nEverything is there! Kind of technical, but also free online"
+  },
+  {
+    "objectID": "slides/03_Stan/index.html#bayesian-models-by-hobbs-and-hooten",
+    "href": "slides/03_Stan/index.html#bayesian-models-by-hobbs-and-hooten",
+    "title": "Connecting theory to data: Introduction to Bayesian statistics for ecologists",
+    "section": "Bayesian Models by Hobbs and Hooten",
+    "text": "Bayesian Models by Hobbs and Hooten\n\nknitr::include_graphics(\"https://pup-assets.imgix.net/onix/images/9780691159287.jpg?w=410&auto=format\")\n\n\nExcellent pencil-and-paper intro to Bayesian thinking"
+  },
+  {
+    "objectID": "slides/03_Stan/index.html#course-datasets",
+    "href": "slides/03_Stan/index.html#course-datasets",
+    "title": "Connecting theory to data: Introduction to Bayesian statistics for ecologists",
+    "section": "Course datasets",
+    "text": "Course datasets\n\nPalmer Penguins\nmite data from the vegan package"
+  },
+  {
+    "objectID": "slides/03_Stan/index.html#philosophy",
+    "href": "slides/03_Stan/index.html#philosophy",
+    "title": "Connecting theory to data: Introduction to Bayesian statistics for ecologists",
+    "section": "Philosophy",
+    "text": "Philosophy\n Cohen 1994"
+  },
+  {
+    "objectID": "slides/03_Stan/index.html#frequentist-vs-bayes-rival-statistical-paradigms",
+    "href": "slides/03_Stan/index.html#frequentist-vs-bayes-rival-statistical-paradigms",
+    "title": "Connecting theory to data: Introduction to Bayesian statistics for ecologists",
+    "section": "Frequentist vs Bayes: “Rival” statistical paradigms?",
+    "text": "Frequentist vs Bayes: “Rival” statistical paradigms?"
+  },
+  {
+    "objectID": "slides/03_Stan/index.html#pragmatism",
+    "href": "slides/03_Stan/index.html#pragmatism",
+    "title": "Connecting theory to data: Introduction to Bayesian statistics for ecologists",
+    "section": "Pragmatism",
+    "text": "Pragmatism\nWho recognizes this classic when working in lme4:\n    boundary (singular) fit: see ?isSingular\nBen Bolker himself recommends avoiding this with Bayes"
+  },
+  {
+    "objectID": "slides/03_Stan/index.html#my-favourite-reason-creativity",
+    "href": "slides/03_Stan/index.html#my-favourite-reason-creativity",
+    "title": "Connecting theory to data: Introduction to Bayesian statistics for ecologists",
+    "section": "My favourite reason: Creativity",
+    "text": "My favourite reason: Creativity"
+  },
+  {
+    "objectID": "slides/03_Stan/index.html#my-real-favourite-reason-community",
+    "href": "slides/03_Stan/index.html#my-real-favourite-reason-community",
+    "title": "Connecting theory to data: Introduction to Bayesian statistics for ecologists",
+    "section": "My REAL favourite reason: Community",
+    "text": "My REAL favourite reason: Community"
   },
   {
     "objectID": "slides/03_Stan/index.html#what-we-talk-about-when-we-talk-about-pboldsymboltextdatatheta",
     "href": "slides/03_Stan/index.html#what-we-talk-about-when-we-talk-about-pboldsymboltextdatatheta",
-    "title": "Stan",
+    "title": "Connecting theory to data: Introduction to Bayesian statistics for ecologists",
     "section": "What we talk about when we talk about \\(P(\\boldsymbol{\\text{data}|\\theta})\\)",
-    "text": "What we talk about when we talk about \\(P(\\boldsymbol{\\text{data}|\\theta})\\)\nA concrete example\n\n\n\nLaid\nHatched\n\n\n\n\nEgg 1\nChick 1\n\n\nEgg 2\nChick 2\n\n\nEgg 3\nChick 3"
+    "text": "What we talk about when we talk about \\(P(\\boldsymbol{\\text{data}|\\theta})\\)\n\\[\n\\begin{equation}\nP(A|B) = \\frac{P(B|A) \\cdot P(A)}{P(B)}\n\\end{equation}\n\\]"
   },
   {
     "objectID": "slides/03_Stan/index.html#what-we-talk-about-when-we-talk-about-pboldsymboltextdatatheta-1",
     "href": "slides/03_Stan/index.html#what-we-talk-about-when-we-talk-about-pboldsymboltextdatatheta-1",
-    "title": "Stan",
+    "title": "Connecting theory to data: Introduction to Bayesian statistics for ecologists",
     "section": "What we talk about when we talk about \\(P(\\boldsymbol{\\text{data}|\\theta})\\)",
-    "text": "What we talk about when we talk about \\(P(\\boldsymbol{\\text{data}|\\theta})\\)\nWhat’s the probability of this dataset?\nThis is called the likelihood\n\\[\n\\begin{align}\n\\text{hatch} &\\sim \\text{Binomial}(p, 5) \\\\\n\\end{align}\n\\]"
+    "text": "What we talk about when we talk about \\(P(\\boldsymbol{\\text{data}|\\theta})\\)\n\\[\n\\begin{equation}\nP(\\boldsymbol{\\theta}|\\text{data}) = \\frac{P(\\boldsymbol{\\text{data}|\\theta}) \\cdot P(\\boldsymbol{\\theta})}{P(\\text{data})}\n\\end{equation}\n\\]"
   },
   {
     "objectID": "slides/03_Stan/index.html#what-we-talk-about-when-we-talk-about-pboldsymboltextdatatheta-2",
     "href": "slides/03_Stan/index.html#what-we-talk-about-when-we-talk-about-pboldsymboltextdatatheta-2",
-    "title": "Stan",
+    "title": "Connecting theory to data: Introduction to Bayesian statistics for ecologists",
     "section": "What we talk about when we talk about \\(P(\\boldsymbol{\\text{data}|\\theta})\\)",
-    "text": "What we talk about when we talk about \\(P(\\boldsymbol{\\text{data}|\\theta})\\)\n\\[\n\\begin{align*}\n    P(3, 4, 5 | p) &= \\text{Binomial}(3 | p, 5) \\\\\n                   &\\quad \\times \\text{Binomial}(4 | p, 5) \\\\\n                   &\\quad \\times \\text{Binomial}(5 | p, 5)\n\\end{align*}\n\\]"
+    "text": "What we talk about when we talk about \\(P(\\boldsymbol{\\text{data}|\\theta})\\)\n\\[\n\\begin{equation}\nP(\\boldsymbol{\\theta}|\\text{data}) \\propto P(\\boldsymbol{\\text{data}|\\theta}) \\cdot P(\\boldsymbol{\\theta})\n\\end{equation}\n\\]"
+  },
+  {
+    "objectID": "slides/03_Stan/index.html#a-concrete-example",
+    "href": "slides/03_Stan/index.html#a-concrete-example",
+    "title": "Connecting theory to data: Introduction to Bayesian statistics for ecologists",
+    "section": "A concrete example",
+    "text": "A concrete example\n\n\n\nLaid\nHatched\n\n\n\n\nEgg 1\nChick 1\n\n\nEgg 2\nChick 2\n\n\nEgg 3\nChick 3"
+  },
+  {
+    "objectID": "slides/03_Stan/index.html#what-is-a-likelihood",
+    "href": "slides/03_Stan/index.html#what-is-a-likelihood",
+    "title": "Connecting theory to data: Introduction to Bayesian statistics for ecologists",
+    "section": "What is a Likelihood",
+    "text": "What is a Likelihood\nWhat’s the probability of this dataset?\nThis is called the likelihood\n\\[\n\\begin{align}\n\\text{hatch} &\\sim \\text{Binomial}(p, 5) \\\\\n\\end{align}\n\\]"
+  },
+  {
+    "objectID": "slides/03_Stan/index.html#what-is-a-log-likelihood",
+    "href": "slides/03_Stan/index.html#what-is-a-log-likelihood",
+    "title": "Connecting theory to data: Introduction to Bayesian statistics for ecologists",
+    "section": "What is a Log Likelihood?",
+    "text": "What is a Log Likelihood?\n\\[\n\\begin{align*}\n    P(3, 4, 5 | p) &= \\text{Binomial}(3 | p, 5) \\\\\n                   &\\quad \\times \\text{Binomial}(4 | p, 5) \\\\\n                   &\\quad \\times \\text{Binomial}(5 | p, 5)\n\\end{align*}\n\\]"
   },
   {
     "objectID": "slides/03_Stan/index.html#what-we-talk-about-when-we-talk-about-pboldsymboltextdatatheta-3",
     "href": "slides/03_Stan/index.html#what-we-talk-about-when-we-talk-about-pboldsymboltextdatatheta-3",
-    "title": "Stan",
+    "title": "Connecting theory to data: Introduction to Bayesian statistics for ecologists",
     "section": "What we talk about when we talk about \\(P(\\boldsymbol{\\text{data}|\\theta})\\)",
     "text": "What we talk about when we talk about \\(P(\\boldsymbol{\\text{data}|\\theta})\\)\n\\[\n\\begin{align*}\n    \\ln{P(3, 4, 5 | p)} &=  \\log(\\text{Binomial}(3 | p, 5)) \\\\\n                   &+  \\log(\\text{Binomial}(4 | p, 5)) \\\\\n                   &+ \\log(\\text{Binomial}(5 | p, 5))\n\\end{align*}\n\\]"
   },
   {
     "objectID": "slides/03_Stan/index.html#log-likelihood-code-in-r",
     "href": "slides/03_Stan/index.html#log-likelihood-code-in-r",
-    "title": "Stan",
+    "title": "Connecting theory to data: Introduction to Bayesian statistics for ecologists",
     "section": "log-likelihood code in R",
     "text": "log-likelihood code in R\n\n\nsurv &lt;- c(3, 4, 5)\n\ncalc_ll &lt;- function(x) {\n  res &lt;- sum(-dbinom(surv, 5,\n                     prob = x,\n                     log = TRUE))\n  return(res)\n}\n\nprob_val &lt;- seq(from = 0, to = 1,\n                length.out = 30)\nlog_lik &lt;- numeric(30L)\n\nfor (i in 1:length(prob_val)) {\n  log_lik[i] &lt;- calc_ll(prob_val[i])\n}\npar(cex = 3)\nplot(prob_val, log_lik, type = \"b\")"
   },
   {
     "objectID": "slides/03_Stan/index.html#make-it-bayes-add-a-prior",
     "href": "slides/03_Stan/index.html#make-it-bayes-add-a-prior",
-    "title": "Stan",
+    "title": "Connecting theory to data: Introduction to Bayesian statistics for ecologists",
     "section": "Make it Bayes: add a prior",
     "text": "Make it Bayes: add a prior\n\\[\n\\begin{align}\n\\text{hatch} &\\sim \\text{Binomial}(p, 5) \\\\\np &\\sim \\text{Uniform}(0,1)\n\\end{align}\n\\]"
   },
   {
     "objectID": "slides/03_Stan/index.html#make-it-bayes-add-a-prior-1",
     "href": "slides/03_Stan/index.html#make-it-bayes-add-a-prior-1",
-    "title": "Stan",
+    "title": "Connecting theory to data: Introduction to Bayesian statistics for ecologists",
     "section": "Make it Bayes: add a prior",
-    "text": "Make it Bayes: add a prior\n\\[\n\\begin{align*}\nP(\\boldsymbol{\\theta}|\\text{data}) &\\propto P(\\boldsymbol{\\text{data}|\\theta}) \\cdot P(\\boldsymbol{\\theta}) \\\\[10pt]\n&\\propto \\text{Bin}(3|p,5) \\cdot \\text{Bin}(4|p,5) \\\\\n&\\qquad \\cdot \\text{Bin}(5|p,5)\\cdot \\text{Uniform}(p|0,1) \\\\[10pt]\n\\log(P(\\boldsymbol{\\theta}|\\text{data})) &\\propto \\log(\\text{Bin}(3|p,5)) + \\log(\\text{Bin}(4|p,5)) \\\\\n&\\qquad + \\log(\\text{Bin}(5|p,5)) + \\log(\\text{Uniform}(p|0,1)) \\\\\n\\end{align*}\n\\]"
+    "text": "Make it Bayes: add a prior\n\\[\n\\begin{align*}\nP(\\boldsymbol{\\theta}|\\text{data}) &\\propto P(\\boldsymbol{\\text{data}|\\theta}) \\cdot P(\\boldsymbol{\\theta}) \\\\[10pt]\nP(p|\\text{data})&\\propto \\text{Bin}(3|p,5) \\cdot \\text{Bin}(4|p,5) \\\\\n&\\qquad \\cdot \\text{Bin}(5|p,5)\\cdot \\text{Uniform}(p|0,1) \\\\[10pt]\n\\log(P(p|\\text{data})) &\\propto \\log(\\text{Bin}(3|p,5)) + \\log(\\text{Bin}(4|p,5)) \\\\\n&\\qquad + \\log(\\text{Bin}(5|p,5)) + \\log(\\text{Uniform}(p|0,1)) \\\\\n\\end{align*}\n\\]"
   },
   {
     "objectID": "slides/03_Stan/index.html#sampling-the-uncalculable",
     "href": "slides/03_Stan/index.html#sampling-the-uncalculable",
-    "title": "Stan",
+    "title": "Connecting theory to data: Introduction to Bayesian statistics for ecologists",
     "section": "Sampling the uncalculable",
     "text": "Sampling the uncalculable\n\n\n\n\nMANIAC I, 1956 (top) Arianna W. Rosenbluth"
   },
   {
     "objectID": "slides/03_Stan/index.html#sampling-the-uncalculable-1",
     "href": "slides/03_Stan/index.html#sampling-the-uncalculable-1",
-    "title": "Stan",
+    "title": "Connecting theory to data: Introduction to Bayesian statistics for ecologists",
     "section": "Sampling the uncalculable",
-    "text": "Sampling the uncalculable"
-  },
-  {
-    "objectID": "slides/03_Stan/index.html#what-is-stan",
-    "href": "slides/03_Stan/index.html#what-is-stan",
-    "title": "Stan",
-    "section": "What is Stan?",
-    "text": "What is Stan?\n\n\n\n\n\n\n\n\n\n\n\nStanisław Ulam"
+    "text": "Sampling the uncalculable\n\n\n\n\n\n\n\n\n\n\n\nStanisław Ulam"
   },
   {
     "objectID": "slides/03_Stan/index.html#stan",
     "href": "slides/03_Stan/index.html#stan",
-    "title": "Stan",
+    "title": "Connecting theory to data: Introduction to Bayesian statistics for ecologists",
     "section": "Stan",
     "text": "Stan\nhttps://mc-stan.org/\n\nA comprehensive software ecosystem aimed at facilitating the application of Bayesian inference\n\nFull Bayesian statistical inference with MCMC sampling (but not only)\nIntegrated with most data analysis languages (R, Python, MATLAB, Julia, Stata)"
   },
   {
     "objectID": "slides/03_Stan/index.html#why-stan",
     "href": "slides/03_Stan/index.html#why-stan",
-    "title": "Stan",
+    "title": "Connecting theory to data: Introduction to Bayesian statistics for ecologists",
     "section": "Why Stan?",
     "text": "Why Stan?\n\nOpen source\nExtensive documentation\nPowerful sampling algorithm\nLarge and active online community!"
   },
   {
     "objectID": "slides/03_Stan/index.html#hmc",
     "href": "slides/03_Stan/index.html#hmc",
-    "title": "Stan",
+    "title": "Connecting theory to data: Introduction to Bayesian statistics for ecologists",
     "section": "HMC",
-    "text": "HMC\n\nMetropolis and Gibbs limitations:\n\nA lot of tuning to find the best spot between large and small steps\nInefficient in high-dimensional spaces\nCan’t travel long distances between isolated local minimums\n\nHamiltonian Monte Carlo:\n\nUses a gradient-based MCMC to reduce the random walk (hence autocorrelation)\nStatic HMC\nNo-U-Turn Sampler (NUTS)\nDon’t get it? Viz it!"
+    "text": "HMC\n\nMetropolis and Gibbs limitations:\n\nA lot of tuning to find the best spot between large and small steps\nInefficient in high-dimensional spaces\nCan’t travel long distances between isolated local minimums\n\nHamiltonian Monte Carlo:\n\nUses a gradient-based MCMC to reduce the random walk (hence autocorrelation)\nStatic HMC\nNo-U-Turn Sampler (NUTS)\nHere is a beautiful visualization of the how HMC works"
   },
   {
-    "objectID": "slides/03_Stan/index.html#how-to-stan",
-    "href": "slides/03_Stan/index.html#how-to-stan",
-    "title": "Stan",
-    "section": "How to Stan",
-    "text": "How to Stan"
-  },
-  {
-    "objectID": "slides/03_Stan/index.html#why-to-stan",
-    "href": "slides/03_Stan/index.html#why-to-stan",
-    "title": "Stan",
-    "section": "WHY to Stan",
-    "text": "WHY to Stan"
+    "objectID": "slides/03_Stan/index.html#stan-cest-sweet-comme-le-sirop",
+    "href": "slides/03_Stan/index.html#stan-cest-sweet-comme-le-sirop",
+    "title": "Connecting theory to data: Introduction to Bayesian statistics for ecologists",
+    "section": "Stan c’est sweet comme le sirop",
+    "text": "Stan c’est sweet comme le sirop"
   },
   {
     "objectID": "slides/06_Simple_hierarchical_model/index.html#hierarchical-models",

@@ -67,37 +67,22 @@ Stan is a language and software distinct from R. It has a large a diverse commun
 | **Stan / cmdstanr** | Stan code is the same as for rstan, but R interface is a little different | Developed faster than rstan, a little more efficient, a little harder to install |
 
 
-Every model in this workshop is shown first in raw Stan via rstan, then as a brms shortcut.
-After the workshop, you may prefer cmdstan / CmdStanR for a more cutting-edge experience.
+The models in this workshop are made with a mix of these methods, mostly Stan and run in R via Rstan. There are also examples with brms as well. 
+
+After the workshop, you may prefer cmdstan / CmdStanR for a more up-to-date experience.
 
 
-
-Opening exercise: simulation
-
-slides: Intro to Andrew, why bayes, Stan history, 4 reasons to bayes (contains likelihood already)
-[Stan and HMC](slides/03_Stan) 
+Opening slides: [Stan and HMC](slides/03_Stan) 
 [Data we'll be using](slides/01_Data)
-
 
 Tutorial: [Simulation and model fitting in Stan](topics/01_simulation)
 
-
-[Bayesian and MCMC](slides/02_Bayesian)
-
-
-
-### Slides
-[Introduction to the course and location](slides/00_Introduction)
-[Probability Distributions](slides/02_5_Distribution)
-
-
-keep only the parts about how to write a linear model and how to write a GLM
-[Linear models](slides/04_Linear_model)
+Bonus content: [Probability Distributions](slides/02_5_Distribution), courtesy of Guillaume Blanchet!
 
 
 Tutorial: [Regression with discrete predictors](topics/discrete_predictor)
 
-[Linear regression](topics/02_regression)
+Tutorial and capstone exercise: [Linear regression](topics/02_regression)
 
 
 ***BREAK***

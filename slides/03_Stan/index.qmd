@@ -1,10 +1,10 @@
 ---
-title: "Stan"
+title: "Connecting theory to data: Introduction to Bayesian statistics for ecologists"
 title-slide-attributes: 
   data-background-image: ../img/bg.jpg
   data-background-size: full
-author: "Andrew MacDonald -- Guillaume Blanchet"
-date: "2025-05-06"
+author: "Andrew MacDonald"
+date: "11 May 2026"
 execute:
   echo: true
 format: 
@@ -25,7 +25,110 @@ include-in-header:
       </style>
 ---
 
-## What is the point of this?
+## Opening Exercise
+
+Let's warm up with a quick simulation exercise! 
+
+1. open up Rstudio
+1. Choose a statistical distribution of interest - maybe even one that isn't the Normal Distribution!
+1. Simulate data from the chosen distribution
+1. Make a histogram of these random numbers
+1. Turn to your neighbour and discuss what biological phenomenon might result in these kinds of values.
+
+## Outline for today
+
+* Brief introduction to the Why and How of writing Bayesian models in Stan
+
+BREAK
+
+* Choose Your Own Adventure: either work on exercises in an area of interest to you, or write your own Bayesian model for your data!
+
+## Quick personal introduction
+
+::::: columns
+::: {.column width="40%"}
+- Field ecologist turned statistican
+- started off in insect-plant interactions, has now done:
+  - fish populations
+  - kangaroo life history
+  - fly mating behaviour
+  - animal personality
+- Mostly a Bayesian
+- Please introduce yourselves and your projects!
+:::
+
+::: {.column width="60%"}
+![](../../img/me.png){width="60%"}
+:::
+:::::
+
+# Course resources -- books I find useful
+
+## Statistical Rethinking
+
+```{r echo=FALSE, out.width="30%", fig.align='center'}
+knitr::include_graphics("https://images.tandf.co.uk/common/jackets/crclarge/978042902/9780429029608.jpg")
+```
+
+This workshop is based on this book! it is a fabulous guide to self-teaching!
+
+See also Richard's awesome [Youtube videos](https://www.youtube.com/@rmcelreath) 
+
+## Bayesian Data Analysis
+
+```{r echo=FALSE, out.width="30%", fig.align='center'}
+knitr::include_graphics("https://sites.stat.columbia.edu/gelman/book/bda_cover.png")
+```
+
+Everything is there! Kind of technical, but also [free online](https://sites.stat.columbia.edu/gelman/book/)
+
+## Bayesian Models by Hobbs and Hooten
+
+```{r}
+#| echo: false
+knitr::include_graphics("https://pup-assets.imgix.net/onix/images/9780691159287.jpg?w=410&auto=format")
+```
+
+Excellent pencil-and-paper intro to Bayesian thinking
+
+## Course datasets
+
+- [Palmer Penguins](https://allisonhorst.github.io/palmerpenguins/)
+- mite data from the `vegan` package
+
+
+# Why should you use Bayesian statistics?
+
+## Philosophy 
+
+![](../../img/cohen.png){fig-align="center"}
+Cohen 1994
+
+## Frequentist vs Bayes: "Rival" statistical paradigms?
+
+![](../../img/faceoff_faces.png){fig-align="center"}
+
+
+## Pragmatism 
+
+Who recognizes this classic when working in `lme4`:
+
+```r
+    boundary (singular) fit: see ?isSingular
+```
+
+Ben Bolker himself recommends [avoiding this with Bayes](https://bbolker.github.io/mixedmodels-misc/glmmFAQ.html#singular-fits)
+
+## My favourite reason: Creativity
+
+![](../img/whiteboard.png){fig-align="center"}
+
+## My REAL favourite reason: Community
+
+![](../img/standiscourse.png){fig-align="center"}
+
+
+## What we talk about when we talk about $P(\boldsymbol{\text{data}|\theta})$
 
 $$
 \begin{equation}
@@ -34,7 +137,7 @@ P(A|B) = \frac{P(B|A) \cdot P(A)}{P(B)}
 $$
 
 
-## What is the point of this
+## What we talk about when we talk about $P(\boldsymbol{\text{data}|\theta})$
 
 $$
 \begin{equation}
@@ -42,7 +145,7 @@ P(\boldsymbol{\theta}|\text{data}) = \frac{P(\boldsymbol{\text{data}|\theta}) \c
 \end{equation}
 $$
 
-## What is the point of this
+## What we talk about when we talk about $P(\boldsymbol{\text{data}|\theta})$
 
 $$
 \begin{equation}
@@ -50,9 +153,7 @@ P(\boldsymbol{\theta}|\text{data}) \propto P(\boldsymbol{\text{data}|\theta}) \c
 \end{equation}
 $$
 
-## What we talk about when we talk about $P(\boldsymbol{\text{data}|\theta})$
-
-A concrete example
+## A concrete example
 
 
 | Laid   | Hatched |
@@ -61,7 +162,7 @@ A concrete example
 | Egg 2  | Chick 2 |
 | Egg 3  | Chick 3 |
 
-## What we talk about when we talk about $P(\boldsymbol{\text{data}|\theta})$
+## What is a Likelihood
 
 What's the probability of this dataset?  
 This is called the _likelihood_
@@ -72,7 +173,7 @@ $$
 \end{align}
 $$
 
-## What we talk about when we talk about $P(\boldsymbol{\text{data}|\theta})$
+## What is a Log Likelihood?
 
 $$
 \begin{align*}
@@ -124,7 +225,6 @@ plot(prob_val, log_lik, type = "b")
 
 ## Make it Bayes: add a prior
 
-
 $$
 \begin{align}
 \text{hatch} &\sim \text{Binomial}(p, 5) \\
@@ -138,9 +238,9 @@ $$
 $$
 \begin{align*}
 P(\boldsymbol{\theta}|\text{data}) &\propto P(\boldsymbol{\text{data}|\theta}) \cdot P(\boldsymbol{\theta}) \\[10pt]
-&\propto \text{Bin}(3|p,5) \cdot \text{Bin}(4|p,5) \\
+P(p|\text{data})&\propto \text{Bin}(3|p,5) \cdot \text{Bin}(4|p,5) \\
 &\qquad \cdot \text{Bin}(5|p,5)\cdot \text{Uniform}(p|0,1) \\[10pt]
-\log(P(\boldsymbol{\theta}|\text{data})) &\propto \log(\text{Bin}(3|p,5)) + \log(\text{Bin}(4|p,5)) \\
+\log(P(p|\text{data})) &\propto \log(\text{Bin}(3|p,5)) + \log(\text{Bin}(4|p,5)) \\
 &\qquad + \log(\text{Bin}(5|p,5)) + \log(\text{Uniform}(p|0,1)) \\
 \end{align*}
 $$
@@ -168,17 +268,13 @@ Arianna W. Rosenbluth
 
 ## Sampling the uncalculable
 
-
-
-
-## What is Stan?
 <hr width="100%" align="left" size="0.3" color="orange"></hr>
 
 ::: {layout-ncol=2}
 
 ![](https://statmodeling.stat.columbia.edu/wp-content/uploads/2015/11/stan_logo.png)
 
-![Stanisław Ulam](https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/Stanislaw_Ulam.tif/lossy-page1-826px-Stanislaw_Ulam.tif.jpg){width=70%}
+![Stanisław Ulam](https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/Stanislaw_Ulam.tif/lossy-page1-500px-Stanislaw_Ulam.tif.jpg){width=70%}
 
 :::
 
@@ -222,19 +318,9 @@ Metropolis and Gibbs limitations:
 
 - No-U-Turn Sampler (NUTS)
 
-- Don't get it? [Viz it!](https://arogozhnikov.github.io/2016/12/19/markov_chain_monte_carlo.html)
+- Here is a beautiful [visualization of the how HMC works](https://arogozhnikov.github.io/2016/12/19/markov_chain_monte_carlo.html)
 :::
 
-## How to Stan
+## Stan c'est sweet comme le sirop
 
 ![](../img/sucre.jpg){fig-align="center"}
-
-## WHY to Stan
-
-::: {layout-ncol=2}
-
-![](../img/standiscourse.png)
-
-![](../img/whiteboard.png)
-
-:::

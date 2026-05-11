@@ -9,9 +9,9 @@
 <link href="../../site_libs/quarto-html/quarto-syntax-highlighting-845c23b38eaddc0f92fda52bfe77a8c8.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
   <meta name="generator" content="quarto-1.9.36">
 
-  <meta name="author" content="Andrew MacDonald – Guillaume Blanchet">
-  <meta name="dcterms.date" content="2025-05-06">
-  <title>Connecting theory to data: Introduction to Bayesian statistics for ecologists – Stan</title>
+  <meta name="author" content="Andrew MacDonald">
+  <meta name="dcterms.date" content="2026-05-11">
+  <title>Connecting theory to data: Introduction to Bayesian statistics for ecologists</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
@@ -205,45 +205,143 @@
     <div class="slides">
 
 <section id="title-slide" data-background-image="../img/bg.jpg" data-background-size="full" class="quarto-title-block center">
-  <h1 class="title">Stan</h1>
+  <h1 class="title">Connecting theory to data: Introduction to Bayesian statistics for ecologists</h1>
 
 <div class="quarto-title-authors">
 <div class="quarto-title-author">
 <div class="quarto-title-author-name">
-Andrew MacDonald – Guillaume Blanchet 
+Andrew MacDonald 
 </div>
 </div>
 </div>
 
-  <p class="date">2025-05-06</p>
+  <p class="date">2026-05-11</p>
 </section>
-<section id="what-is-the-point-of-this" class="slide level2">
-<h2>What is the point of this?</h2>
+<section id="opening-exercise" class="slide level2">
+<h2>Opening Exercise</h2>
+<p>Let’s warm up with a quick simulation exercise!</p>
+<ol type="1">
+<li>open up Rstudio</li>
+<li>Choose a statistical distribution of interest - maybe even one that isn’t the Normal Distribution!</li>
+<li>Simulate data from the chosen distribution</li>
+<li>Make a histogram of these random numbers</li>
+<li>Turn to your neighbour and discuss what biological phenomenon might result in these kinds of values.</li>
+</ol>
+</section>
+<section id="outline-for-today" class="slide level2">
+<h2>Outline for today</h2>
+<ul>
+<li>Brief introduction to the Why and How of writing Bayesian models in Stan</li>
+</ul>
+<p>BREAK</p>
+<ul>
+<li>Choose Your Own Adventure: either work on exercises in an area of interest to you, or write your own Bayesian model for your data!</li>
+</ul>
+</section>
+<section id="quick-personal-introduction" class="slide level2">
+<h2>Quick personal introduction</h2>
+<div class="columns">
+<div class="column" style="width:40%;">
+<ul>
+<li>Field ecologist turned statistican</li>
+<li>started off in insect-plant interactions, has now done:
+<ul>
+<li>fish populations</li>
+<li>kangaroo life history</li>
+<li>fly mating behaviour</li>
+<li>animal personality</li>
+</ul></li>
+<li>Mostly a Bayesian</li>
+<li>Please introduce yourselves and your projects!</li>
+</ul>
+</div><div class="column" style="width:60%;">
+<p><img data-src="../../img/me.png" style="width:60.0%"></p>
+</div></div>
+</section>
+<section>
+<section id="course-resources-books-i-find-useful" class="title-slide slide level1 center">
+<h1>Course resources – books I find useful</h1>
+
+</section>
+<section id="statistical-rethinking" class="slide level2">
+<h2>Statistical Rethinking</h2>
+
+<img data-src="https://images.tandf.co.uk/common/jackets/crclarge/978042902/9780429029608.jpg" class="quarto-figure quarto-figure-center r-stretch" style="width:30.0%"><p>This workshop is based on this book! it is a fabulous guide to self-teaching!</p>
+<p>See also Richard’s awesome <a href="https://www.youtube.com/@rmcelreath">Youtube videos</a></p>
+</section>
+<section id="bayesian-data-analysis" class="slide level2">
+<h2>Bayesian Data Analysis</h2>
+
+<img data-src="https://sites.stat.columbia.edu/gelman/book/bda_cover.png" class="quarto-figure quarto-figure-center r-stretch" style="width:30.0%"><p>Everything is there! Kind of technical, but also <a href="https://sites.stat.columbia.edu/gelman/book/">free online</a></p>
+</section>
+<section id="bayesian-models-by-hobbs-and-hooten" class="slide level2">
+<h2>Bayesian Models by Hobbs and Hooten</h2>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a></a>knitr<span class="sc">::</span><span class="fu">include_graphics</span>(<span class="st">"https://pup-assets.imgix.net/onix/images/9780691159287.jpg?w=410&amp;auto=format"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+
+</div>
+<img data-src="https://pup-assets.imgix.net/onix/images/9780691159287.jpg?w=410&amp;auto=format" class="r-stretch"><p>Excellent pencil-and-paper intro to Bayesian thinking</p>
+</section>
+<section id="course-datasets" class="slide level2">
+<h2>Course datasets</h2>
+<ul>
+<li><a href="https://allisonhorst.github.io/palmerpenguins/">Palmer Penguins</a></li>
+<li>mite data from the <code>vegan</code> package</li>
+</ul>
+</section></section>
+<section>
+<section id="why-should-you-use-bayesian-statistics" class="title-slide slide level1 center">
+<h1>Why should you use Bayesian statistics?</h1>
+
+</section>
+<section id="philosophy" class="slide level2">
+<h2>Philosophy</h2>
+<p><img data-src="../../img/cohen.png" class="quarto-figure quarto-figure-center"> Cohen 1994</p>
+</section>
+<section id="frequentist-vs-bayes-rival-statistical-paradigms" class="slide level2">
+<h2>Frequentist vs Bayes: “Rival” statistical paradigms?</h2>
+
+<img data-src="../../img/faceoff_faces.png" class="quarto-figure quarto-figure-center r-stretch"></section>
+<section id="pragmatism" class="slide level2">
+<h2>Pragmatism</h2>
+<p>Who recognizes this classic when working in <code>lme4</code>:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a></a>    <span class="fu">boundary</span> (singular) fit<span class="sc">:</span> see ?isSingular</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Ben Bolker himself recommends <a href="https://bbolker.github.io/mixedmodels-misc/glmmFAQ.html#singular-fits">avoiding this with Bayes</a></p>
+</section>
+<section id="my-favourite-reason-creativity" class="slide level2">
+<h2>My favourite reason: Creativity</h2>
+
+<img data-src="../img/whiteboard.png" class="quarto-figure quarto-figure-center r-stretch"></section>
+<section id="my-real-favourite-reason-community" class="slide level2">
+<h2>My REAL favourite reason: Community</h2>
+
+<img data-src="../img/standiscourse.png" class="quarto-figure quarto-figure-center r-stretch"></section>
+<section id="what-we-talk-about-when-we-talk-about-pboldsymboltextdatatheta" class="slide level2">
+<h2>What we talk about when we talk about <span class="math inline">\(P(\boldsymbol{\text{data}|\theta})\)</span></h2>
 <p><span class="math display">\[
 \begin{equation}
 P(A|B) = \frac{P(B|A) \cdot P(A)}{P(B)}
 \end{equation}
 \]</span></p>
 </section>
-<section id="what-is-the-point-of-this-1" class="slide level2">
-<h2>What is the point of this</h2>
+<section id="what-we-talk-about-when-we-talk-about-pboldsymboltextdatatheta-1" class="slide level2">
+<h2>What we talk about when we talk about <span class="math inline">\(P(\boldsymbol{\text{data}|\theta})\)</span></h2>
 <p><span class="math display">\[
 \begin{equation}
 P(\boldsymbol{\theta}|\text{data}) = \frac{P(\boldsymbol{\text{data}|\theta}) \cdot P(\boldsymbol{\theta})}{P(\text{data})}
 \end{equation}
 \]</span></p>
 </section>
-<section id="what-is-the-point-of-this-2" class="slide level2">
-<h2>What is the point of this</h2>
+<section id="what-we-talk-about-when-we-talk-about-pboldsymboltextdatatheta-2" class="slide level2">
+<h2>What we talk about when we talk about <span class="math inline">\(P(\boldsymbol{\text{data}|\theta})\)</span></h2>
 <p><span class="math display">\[
 \begin{equation}
 P(\boldsymbol{\theta}|\text{data}) \propto P(\boldsymbol{\text{data}|\theta}) \cdot P(\boldsymbol{\theta})
 \end{equation}
 \]</span></p>
 </section>
-<section id="what-we-talk-about-when-we-talk-about-pboldsymboltextdatatheta" class="slide level2">
-<h2>What we talk about when we talk about <span class="math inline">\(P(\boldsymbol{\text{data}|\theta})\)</span></h2>
-<p>A concrete example</p>
+<section id="a-concrete-example" class="slide level2">
+<h2>A concrete example</h2>
 <table class="caption-top">
 <thead>
 <tr class="header">
@@ -267,8 +365,8 @@ P(\boldsymbol{\theta}|\text{data}) \propto P(\boldsymbol{\text{data}|\theta}) \c
 </tbody>
 </table>
 </section>
-<section id="what-we-talk-about-when-we-talk-about-pboldsymboltextdatatheta-1" class="slide level2">
-<h2>What we talk about when we talk about <span class="math inline">\(P(\boldsymbol{\text{data}|\theta})\)</span></h2>
+<section id="what-is-a-likelihood" class="slide level2">
+<h2>What is a Likelihood</h2>
 <p>What’s the probability of this dataset?<br>
 This is called the <em>likelihood</em></p>
 <p><span class="math display">\[
@@ -277,8 +375,8 @@ This is called the <em>likelihood</em></p>
 \end{align}
 \]</span></p>
 </section>
-<section id="what-we-talk-about-when-we-talk-about-pboldsymboltextdatatheta-2" class="slide level2">
-<h2>What we talk about when we talk about <span class="math inline">\(P(\boldsymbol{\text{data}|\theta})\)</span></h2>
+<section id="what-is-a-log-likelihood" class="slide level2">
+<h2>What is a Log Likelihood?</h2>
 <p><span class="math display">\[
 \begin{align*}
     P(3, 4, 5 | p) &amp;= \text{Binomial}(3 | p, 5) \\
@@ -301,29 +399,29 @@ This is called the <em>likelihood</em></p>
 <h2>log-likelihood code in R</h2>
 <div class="cell custom3070 columns column-output-location">
 <div class="column">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a></a>surv <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">4</span>, <span class="dv">5</span>)</span>
-<span id="cb1-2"><a></a></span>
-<span id="cb1-3"><a></a>calc_ll <span class="ot">&lt;-</span> <span class="cf">function</span>(x) {</span>
-<span id="cb1-4"><a></a>  res <span class="ot">&lt;-</span> <span class="fu">sum</span>(<span class="sc">-</span><span class="fu">dbinom</span>(surv, <span class="dv">5</span>,</span>
-<span id="cb1-5"><a></a>                     <span class="at">prob =</span> x,</span>
-<span id="cb1-6"><a></a>                     <span class="at">log =</span> <span class="cn">TRUE</span>))</span>
-<span id="cb1-7"><a></a>  <span class="fu">return</span>(res)</span>
-<span id="cb1-8"><a></a>}</span>
-<span id="cb1-9"><a></a></span>
-<span id="cb1-10"><a></a>prob_val <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="at">from =</span> <span class="dv">0</span>, <span class="at">to =</span> <span class="dv">1</span>,</span>
-<span id="cb1-11"><a></a>                <span class="at">length.out =</span> <span class="dv">30</span>)</span>
-<span id="cb1-12"><a></a>log_lik <span class="ot">&lt;-</span> <span class="fu">numeric</span>(<span class="dv">30</span>L)</span>
-<span id="cb1-13"><a></a></span>
-<span id="cb1-14"><a></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(prob_val)) {</span>
-<span id="cb1-15"><a></a>  log_lik[i] <span class="ot">&lt;-</span> <span class="fu">calc_ll</span>(prob_val[i])</span>
-<span id="cb1-16"><a></a>}</span>
-<span id="cb1-17"><a></a><span class="fu">par</span>(<span class="at">cex =</span> <span class="dv">3</span>)</span>
-<span id="cb1-18"><a></a><span class="fu">plot</span>(prob_val, log_lik, <span class="at">type =</span> <span class="st">"b"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a></a>surv <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">4</span>, <span class="dv">5</span>)</span>
+<span id="cb3-2"><a></a></span>
+<span id="cb3-3"><a></a>calc_ll <span class="ot">&lt;-</span> <span class="cf">function</span>(x) {</span>
+<span id="cb3-4"><a></a>  res <span class="ot">&lt;-</span> <span class="fu">sum</span>(<span class="sc">-</span><span class="fu">dbinom</span>(surv, <span class="dv">5</span>,</span>
+<span id="cb3-5"><a></a>                     <span class="at">prob =</span> x,</span>
+<span id="cb3-6"><a></a>                     <span class="at">log =</span> <span class="cn">TRUE</span>))</span>
+<span id="cb3-7"><a></a>  <span class="fu">return</span>(res)</span>
+<span id="cb3-8"><a></a>}</span>
+<span id="cb3-9"><a></a></span>
+<span id="cb3-10"><a></a>prob_val <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="at">from =</span> <span class="dv">0</span>, <span class="at">to =</span> <span class="dv">1</span>,</span>
+<span id="cb3-11"><a></a>                <span class="at">length.out =</span> <span class="dv">30</span>)</span>
+<span id="cb3-12"><a></a>log_lik <span class="ot">&lt;-</span> <span class="fu">numeric</span>(<span class="dv">30</span>L)</span>
+<span id="cb3-13"><a></a></span>
+<span id="cb3-14"><a></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(prob_val)) {</span>
+<span id="cb3-15"><a></a>  log_lik[i] <span class="ot">&lt;-</span> <span class="fu">calc_ll</span>(prob_val[i])</span>
+<span id="cb3-16"><a></a>}</span>
+<span id="cb3-17"><a></a><span class="fu">par</span>(<span class="at">cex =</span> <span class="dv">3</span>)</span>
+<span id="cb3-18"><a></a><span class="fu">plot</span>(prob_val, log_lik, <span class="at">type =</span> <span class="st">"b"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div><div class="column">
 <div class="cell-output-display">
 <div>
 <figure>
-<p><img data-src="index_files/figure-revealjs/unnamed-chunk-1-1.png" width="960"></p>
+<p><img data-src="index_files/figure-revealjs/unnamed-chunk-4-1.png" width="960"></p>
 </figure>
 </div>
 </div>
@@ -343,9 +441,9 @@ p &amp;\sim \text{Uniform}(0,1)
 <p><span class="math display">\[
 \begin{align*}
 P(\boldsymbol{\theta}|\text{data}) &amp;\propto P(\boldsymbol{\text{data}|\theta}) \cdot P(\boldsymbol{\theta}) \\[10pt]
-&amp;\propto \text{Bin}(3|p,5) \cdot \text{Bin}(4|p,5) \\
+P(p|\text{data})&amp;\propto \text{Bin}(3|p,5) \cdot \text{Bin}(4|p,5) \\
 &amp;\qquad \cdot \text{Bin}(5|p,5)\cdot \text{Uniform}(p|0,1) \\[10pt]
-\log(P(\boldsymbol{\theta}|\text{data})) &amp;\propto \log(\text{Bin}(3|p,5)) + \log(\text{Bin}(4|p,5)) \\
+\log(P(p|\text{data})) &amp;\propto \log(\text{Bin}(3|p,5)) + \log(\text{Bin}(4|p,5)) \\
 &amp;\qquad + \log(\text{Bin}(5|p,5)) + \log(\text{Uniform}(p|0,1)) \\
 \end{align*}
 \]</span></p>
@@ -366,9 +464,6 @@ P(\boldsymbol{\theta}|\text{data}) &amp;\propto P(\boldsymbol{\text{data}|\theta
 </section>
 <section id="sampling-the-uncalculable-1" class="slide level2">
 <h2>Sampling the uncalculable</h2>
-</section>
-<section id="what-is-stan" class="slide level2">
-<h2>What is Stan?</h2>
 <hr width="100%" align="left" size="0.3" color="orange">
 
 <div class="quarto-layout-panel" data-layout-ncol="2">
@@ -379,7 +474,7 @@ P(\boldsymbol{\theta}|\text{data}) &amp;\propto P(\boldsymbol{\text{data}|\theta
 <div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: flex-start;">
 <div class="quarto-figure quarto-figure-center">
 <figure>
-<p><img data-src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/Stanislaw_Ulam.tif/lossy-page1-826px-Stanislaw_Ulam.tif.jpg" style="width:70.0%"></p>
+<p><img data-src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/Stanislaw_Ulam.tif/lossy-page1-500px-Stanislaw_Ulam.tif.jpg" style="width:70.0%"></p>
 <figcaption>Stanisław Ulam</figcaption>
 </figure>
 </div>
@@ -404,7 +499,7 @@ P(\boldsymbol{\theta}|\text{data}) &amp;\propto P(\boldsymbol{\text{data}|\theta
 <li>Powerful sampling algorithm</li>
 <li>Large and active online community!</li>
 </ul>
-</section>
+</section></section>
 <section>
 <section id="hamiltonian-monte-carlo-hmc" class="title-slide slide level1 center">
 <h1>Hamiltonian Monte Carlo (HMC)</h1>
@@ -425,29 +520,16 @@ P(\boldsymbol{\theta}|\text{data}) &amp;\propto P(\boldsymbol{\text{data}|\theta
 <li><p>Uses a gradient-based MCMC to reduce the random walk (hence autocorrelation)</p></li>
 <li><p>Static HMC</p></li>
 <li><p>No-U-Turn Sampler (NUTS)</p></li>
-<li><p>Don’t get it? <a href="https://arogozhnikov.github.io/2016/12/19/markov_chain_monte_carlo.html">Viz it!</a></p></li>
+<li><p>Here is a beautiful <a href="https://arogozhnikov.github.io/2016/12/19/markov_chain_monte_carlo.html">visualization of the how HMC works</a></p></li>
 </ul>
 </div>
 </section>
-<section id="how-to-stan" class="slide level2">
-<h2>How to Stan</h2>
-
-<img data-src="../img/sucre.jpg" class="quarto-figure quarto-figure-center r-stretch"></section>
-<section id="why-to-stan" class="slide level2">
-<h2>WHY to Stan</h2>
-<div class="quarto-layout-panel" data-layout-ncol="2">
-<div class="quarto-layout-row">
-<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
-<p><img data-src="../img/standiscourse.png"></p>
-</div>
-<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
-<p><img data-src="../img/whiteboard.png"></p>
-</div>
-</div>
-</div>
+<section id="stan-cest-sweet-comme-le-sirop" class="slide level2">
+<h2>Stan c’est sweet comme le sirop</h2>
 
 
-</section></section>
+
+<img data-src="../img/sucre.jpg" class="quarto-figure quarto-figure-center r-stretch"></section></section>
     </div>
   <div class="quarto-auto-generated-content" style="display: none;">
 <p><img src="../img/UdeS_logo_h_rgbHR.png" class="slide-logo"></p>
