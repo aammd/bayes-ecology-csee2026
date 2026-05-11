@@ -1540,20 +1540,6 @@
     "text": "Footnotes\n\n\njust for this toy example!↩︎"
   },
   {
-    "objectID": "about.html",
-    "href": "about.html",
-    "title": "Bayesian statistics for ecology",
-    "section": "",
-    "text": "Much of this material was developed for the University of Sherbrooke course Advanced Statistics and hierarchical models, which was written and delivered by Guillaume Blanchet and Andrew MacDonald\n\n\n\n\n\n\nDr Guillaume Blanchet\n\n\n\n\n\n\n\nDr Andrew MacDonald"
-  },
-  {
-    "objectID": "about.html#descent-with-modification",
-    "href": "about.html#descent-with-modification",
-    "title": "Bayesian statistics for ecology",
-    "section": "",
-    "text": "Much of this material was developed for the University of Sherbrooke course Advanced Statistics and hierarchical models, which was written and delivered by Guillaume Blanchet and Andrew MacDonald\n\n\n\n\n\n\nDr Guillaume Blanchet\n\n\n\n\n\n\n\nDr Andrew MacDonald"
-  },
-  {
     "objectID": "topics/visualization_priors.html",
     "href": "topics/visualization_priors.html",
     "title": "Visualizing priors",
