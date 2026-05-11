@@ -23,6 +23,41 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
@@ -71,6 +106,35 @@ ul.task-list li input[type="checkbox"] {
   }
 }</script>
 
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 <link rel="stylesheet" href="styles.css">
 </head>
@@ -87,7 +151,7 @@ ul.task-list li input[type="checkbox"] {
     </a>
   </div>
         <div class="quarto-navbar-tools tools-end">
-    <a href="https://github.com/aammd/" title="" class="quarto-navigation-tool px-1" aria-label=""><i class="bi bi-github"></i></a>
+    <a href="https://github.com/aammd/bayes-ecology-csee2026" title="" class="quarto-navigation-tool px-1" aria-label=""><i class="bi bi-github"></i></a>
 </div>
           <div id="quarto-search" class="" title="Search"></div>
       </div> <!-- /container-fluid -->
@@ -102,10 +166,15 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#slides" id="toc-slides" class="nav-link active" data-scroll-target="#slides">Slides</a></li>
-  <li><a href="#day-2-intro-to-stan-and-regression" id="toc-day-2-intro-to-stan-and-regression" class="nav-link" data-scroll-target="#day-2-intro-to-stan-and-regression">DAY 2: Intro to Stan and Regression</a></li>
-  <li><a href="#day-3-hierarchical-models" id="toc-day-3-hierarchical-models" class="nav-link" data-scroll-target="#day-3-hierarchical-models">Day 3: Hierarchical models</a></li>
-  <li><a href="#day-4-constrained-models-gaussian-processes" id="toc-day-4-constrained-models-gaussian-processes" class="nav-link" data-scroll-target="#day-4-constrained-models-gaussian-processes">Day 4: Constrained models: Gaussian processes</a></li>
+  <li><a href="#before-we-start" id="toc-before-we-start" class="nav-link active" data-scroll-target="#before-we-start">Before we start</a>
+  <ul class="collapse">
+  <li><a href="#load-packages" id="toc-load-packages" class="nav-link" data-scroll-target="#load-packages">Load packages</a></li>
+  <li><a href="#why-bayesian-statistics-for-ecologists" id="toc-why-bayesian-statistics-for-ecologists" class="nav-link" data-scroll-target="#why-bayesian-statistics-for-ecologists">Why Bayesian statistics for ecologists?</a></li>
+  <li><a href="#the-toolkit" id="toc-the-toolkit" class="nav-link" data-scroll-target="#the-toolkit">The toolkit</a>
+  <ul class="collapse">
+  <li><a href="#slides" id="toc-slides" class="nav-link" data-scroll-target="#slides">Slides</a></li>
+  </ul></li>
+  </ul></li>
   </ul>
 </nav>
     </div>
@@ -131,74 +200,238 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
+<!-- TODO add installation how-to here  -->
+<section id="before-we-start" class="level1">
+<h1>Before we start</h1>
+<!--
+## Posit Cloud
+
+We are running this workshop on **Posit Cloud**. Everything is already installed. Open the shared project link you received and you will land in a ready-to-use RStudio environment.
+-->
+<p>The goal of this workshop is to introduce you to Bayesian statistics using Stan. My hope is that you leave with not only knowledge, but a working software envionment for doing your own work. Please install the required packages with:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="fu">c</span>(</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="st">"tidyverse"</span>,</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">"rstan"</span>,</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="st">"brms"</span>,</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="st">"bayesplot"</span>,</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="st">"tidybayes"</span>,</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  <span class="st">"posterior"</span>,</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  <span class="st">"palmerpenguins"</span>,</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>  <span class="st">"vegan"</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>), <span class="at">dependencies =</span> <span class="cn">TRUE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<section id="load-packages" class="level2">
+<h2 class="anchored" data-anchor-id="load-packages">Load packages</h2>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(rstan)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Loading required package: StanHeaders</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+rstan version 2.32.7 (Stan version 2.32.2)</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>For execution on a local, multicore CPU with excess RAM we recommend calling
+options(mc.cores = parallel::detectCores()).
+To avoid recompilation of unchanged Stan programs, we recommend calling
+rstan_options(auto_write = TRUE)
+For within-chain threading using `reduce_sum()` or `map_rect()` Stan functions,
+change `threads_per_chain` option:
+rstan_options(threads_per_chain = 1)</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Attaching package: 'rstan'</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following object is masked from 'package:tidyr':
+
+    extract</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(brms)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Loading required package: Rcpp</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Loading 'brms' package (version 2.23.0). Useful instructions
+can be found by typing help('brms'). A more detailed introduction
+to the package is available through vignette('brms_overview').</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Attaching package: 'brms'</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following object is masked from 'package:rstan':
+
+    loo</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following object is masked from 'package:stats':
+
+    ar</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(bayesplot)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>This is bayesplot version 1.14.0</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>- Online documentation and vignettes at mc-stan.org/bayesplot</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>- bayesplot theme set to bayesplot::theme_default()</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>   * Does _not_ affect other ggplot2 plots</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>   * See ?bayesplot_theme_set for details on theme setting</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Attaching package: 'bayesplot'</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following object is masked from 'package:brms':
+
+    rhat</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidybayes)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Attaching package: 'tidybayes'</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following objects are masked from 'package:brms':
+
+    dstudent_t, pstudent_t, qstudent_t, rstudent_t</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(posterior)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>This is posterior version 1.6.1</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Attaching package: 'posterior'</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following object is masked from 'package:bayesplot':
+
+    rhat</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following objects are masked from 'package:rstan':
+
+    ess_bulk, ess_tail</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following objects are masked from 'package:stats':
+
+    mad, sd, var</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following objects are masked from 'package:base':
+
+    %in%, match</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(palmerpenguins)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Attaching package: 'palmerpenguins'</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following objects are masked from 'package:datasets':
+
+    penguins, penguins_raw</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="fu">rstan_options</span>(<span class="at">auto_write =</span> <span class="cn">TRUE</span>)          <span class="co"># avoid recompiling unchanged models</span></span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="at">mc.cores =</span> parallel<span class="sc">::</span><span class="fu">detectCores</span>())  <span class="co"># sample chains in parallel</span></span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>bayesplot<span class="sc">::</span><span class="fu">color_scheme_set</span>(<span class="st">"brightblue"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</section>
+<section id="why-bayesian-statistics-for-ecologists" class="level2">
+<h2 class="anchored" data-anchor-id="why-bayesian-statistics-for-ecologists">Why Bayesian statistics for ecologists?</h2>
+<p>Have you ever found yourself with a detailed ecological dataset and a hypothesis you are excited to test, but struggled to find a standard statistical procedure that fits? Bayesian statistics are exciting for ecologists because they let you design a model that meets the full complexity of your data and your ecological ideas.</p>
+<p>Three ideas underpin everything in this workshop:</p>
+<ul>
+<li><strong>Probability as a language for uncertainty.</strong> We assign probability distributions to everything we do not yet know: parameters, future observations, missing data.</li>
+<li><strong>Bayes’ theorem</strong> updates prior beliefs about parameters with the evidence in the data to produce a <em>posterior</em> distribution.</li>
+<li><strong>Generative models.</strong> Because a Bayesian model is a complete probability model of the data-generating process, we can <em>simulate</em> from it. This makes model checking visual and intuitive.</li>
+</ul>
+<p><span class="math display">\[
+\underbrace{p(\theta \mid y)}_{\text{posterior}}
+\;\propto\;
+\underbrace{p(y \mid \theta)}_{\text{likelihood}}
+\;\times\;
+\underbrace{p(\theta)}_{\text{prior}}
+\]</span></p>
+</section>
+<section id="the-toolkit" class="level2">
+<h2 class="anchored" data-anchor-id="the-toolkit">The toolkit</h2>
+<p>Stan is a language and software distinct from R. It has a large a diverse community around it. I’m going to focus on two ways of interacting with it, but there are four::</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Tool</th>
+<th>What it does</th>
+<th>When to use</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Stan / rstan</strong></td>
+<td>Writes, compiles, and samples models</td>
+<td>Full control! You can use this to create a huge range of models</td>
+</tr>
+<tr class="even">
+<td><strong>brms</strong></td>
+<td>Generates Stan code from an extension of lme4 formula syntax</td>
+<td>great way to develop ideas, accessible because of the formula interface</td>
+</tr>
+<tr class="odd">
+<td><strong>rstanarm</strong></td>
+<td>pre-compiled models and a drop-in replacement for lme4</td>
+<td>fast, lightweight</td>
+</tr>
+<tr class="even">
+<td><strong>Stan / cmdstanr</strong></td>
+<td>Stan code is the same as for rstan, but R interface is a little different</td>
+<td>Developed faster than rstan, a little more efficient, a little harder to install</td>
+</tr>
+</tbody>
+</table>
+<p>Every model in this workshop is shown first in raw Stan via rstan, then as a brms shortcut. After the workshop, you may prefer cmdstan / CmdStanR for a more cutting-edge experience.</p>
 <p>Opening exercise: simulation</p>
-<p>slides: Intro to Andrew, why bayes, Stan history, 4 reasons to bayes <a href="slides/03_Stan">Stan and HMC</a> <a href="slides/01_Data">Data we’ll be using</a></p>
+<p>slides: Intro to Andrew, why bayes, Stan history, 4 reasons to bayes (contains likelihood already) <a href="slides/03_Stan">Stan and HMC</a> <a href="slides/01_Data">Data we’ll be using</a></p>
 <p>Tutorial: <a href="topics/01_simulation">Simulation and model fitting in Stan</a></p>
 <p><a href="slides/02_Bayesian">Bayesian and MCMC</a></p>
 <section id="slides" class="level3">
 <h3 class="anchored" data-anchor-id="slides">Slides</h3>
 <p><a href="slides/00_Introduction">Introduction to the course and location</a> <a href="slides/02_5_Distribution">Probability Distributions</a></p>
-</section>
-<section id="day-2-intro-to-stan-and-regression" class="level2">
-<h2 class="anchored" data-anchor-id="day-2-intro-to-stan-and-regression">DAY 2: Intro to Stan and Regression</h2>
-<div class="columns">
-<div class="column" style="width:50%;">
-<section id="slides-1" class="level3">
-<h3 class="anchored" data-anchor-id="slides-1">Slides</h3>
+<p>keep only the parts about how to write a linear model and how to write a GLM <a href="slides/04_Linear_model">Linear models</a></p>
+<p>Tutorial: <a href="topics/discrete_predictor">Regression with discrete predictors</a></p>
+<p><a href="topics/02_regression">Linear regression</a></p>
+<p><strong><em>BREAK</em></strong></p>
+<p>Optional content! Choose your own adventure!</p>
 <ul>
-<li><a href="slides/04_Linear_model">Linear models</a></li>
-</ul>
-</section>
-</div><div class="column" style="width:50%;">
-<section id="exercises" class="level3">
-<h3 class="anchored" data-anchor-id="exercises">Exercises</h3>
-<ul>
-<li><a href="topics/discrete_predictor">Discrete predictors</a></li>
-</ul>
-</section>
-</div>
-</div>
-</section>
-<section id="day-3-hierarchical-models" class="level2">
-<h2 class="anchored" data-anchor-id="day-3-hierarchical-models">Day 3: Hierarchical models</h2>
-<div class="columns">
-<div class="column" style="width:50%;">
-<section id="slides-2" class="level3">
-<h3 class="anchored" data-anchor-id="slides-2">Slides</h3>
-<ul>
-<li><a href="slides/06_Simple_hierarchical_model">Simple hierarchical models</a></li>
-<li><a href="slides/08_Complex_hierarchical_model">Complex hierarchical models</a></li>
-</ul>
-</section>
-</div><div class="column" style="width:50%;">
-<section id="exercises-1" class="level3">
-<h3 class="anchored" data-anchor-id="exercises-1">Exercises</h3>
-<ul>
-<li><a href="topics/02_regression">Linear regression</a></li>
 <li><a href="topics/03_one_random_effect">Hierarchy on the intercept</a></li>
-<li><a href="topics/intercept_only">Intercept-Only Model (and tidybayes discussion)</a></li>
-<li><a href="topics/correlated_effects">Hierarchy on the slope</a></li>
+<li><a href="topics/intercept_only">Variance partitionin with intercept-only models (and tidybayes discussion)</a></li>
+<li><a href="topics/correlated_effects">Hierarchy on the slope – partial pooling demonstration</a></li>
+<li><a href="topics/04_gp">Estimating functions from data - Gaussian processes in Stan</a></li>
+<li><a href="topics/04-phylo">Phylogenetic regression and missing data</a></li>
 </ul>
-</section>
-</div>
-</div>
-</section>
-<section id="day-4-constrained-models-gaussian-processes" class="level2">
-<h2 class="anchored" data-anchor-id="day-4-constrained-models-gaussian-processes">Day 4: Constrained models: Gaussian processes</h2>
-<div class="columns">
-<div class="column" style="width:50%;">
-<ul>
-<li><a href="slides/09_Gaussian_process">Slides</a></li>
-</ul>
-</div><div class="column" style="width:50%;">
-<ul>
-<li><a href="topics/04_gp">A Practical demonstration in Stan</a></li>
-<li><a href="topics/04-phylo">Phylogeny</a></li>
-</ul>
-</div>
-</div>
 
 
+</section>
+</section>
 </section>
 
 </main> <!-- /main -->
