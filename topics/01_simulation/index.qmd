@@ -67,6 +67,8 @@ There are at least three reasons why this is a good idea:
 1. **Test your understanding.** Perhaps most importantly, simulation helps you to test your own intuition.  If you can simulate data from your model, then you really understand it!
 If you can't, then you don't know quite how it works yet. It's rare^[in Andrew's experience anyway!] that a biologist will fail to learn something by simulating a dataset.
 
+![](../../img/hattori.jpeg)
+
 ## Simple exercise in simulation
 
 Let's imagine we are taking a walk as a group today at this beautiful field site. What is the number of birds (total abundance of ALL species) each of us is going to see on our hike?

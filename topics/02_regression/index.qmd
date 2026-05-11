@@ -284,6 +284,122 @@ normal_reg_no_pred |>
 Do we have evidence that there's a relationship between bill length and bill depth.
 :::
 
+## Model diagnostics
+
+When Stan's NUTS sampler runs it records information about how hard it had to work.
+These diagnostics are your first warning system.
+
+| Diagnostic | What to look for | Bad sign |
+|---|---|---|
+| **R-hat** ($\hat{R}$) | Chain convergence | > 1.01 |
+| **Bulk ESS** | Effective samples in the bulk | < 400 |
+| **Tail ESS** | Effective samples in the tails | < 400 |
+| **Divergent transitions** | Numerical problems in HMC | Any > 0 |
+
+```{r}
+#| eval: true
+# Full summary with diagnostics
+print(normal_reg_no_pred)
+
+# Check for divergences
+rstan::check_divergences(normal_reg_no_pred)
+
+# Check Rhat and ESS for all parameters
+rstan::summary(normal_reg_no_pred)$summary[, c("Rhat", "n_eff")]
+```
+
+### What is R-hat?
+
+$\hat{R}$ compares the variance *between* chains to the variance *within* chains.
+If all chains have converged to the same distribution, these should be equal and
+$\hat{R} \approx 1$.
+Values above 1.01 suggest the chains haven't mixed — the posterior you have is not
+the posterior you wanted.
+
+### What is ESS?
+
+Each MCMC draw is correlated with the draws around it. ESS (effective sample size) is the
+equivalent number of *independent* draws. An ESS of 400 is usually sufficient for reliable
+estimates of means and 95% intervals. The tail ESS specifically monitors the quality of
+extreme quantile estimates.
+
+### Traceplots
+
+Traceplots show chain values over iterations. We want well-mixed "fuzzy caterpillars" —
+chains that overlap and wander freely.
+
+```{r}
+#| eval: true
+bayesplot::mcmc_trace(normal_reg_no_pred, pars = c("intercept", "slope", "sigma"))
+```
+
+A **poorly mixing** chain shows long stretches stuck in one region, or chains that
+separate from each other.
+
+### Divergent transitions
+
+Divergences are the most important diagnostic. Each one is flagged when the NUTS
+integrator strays from the true trajectory of the Hamiltonian system.
+They most commonly arise in hierarchical models with funnel-shaped posteriors.
+
+```{r}
+#| eval: true
+# Extract NUTS parameters for visualisation
+np  <- bayesplot::nuts_params(normal_reg_no_pred)
+lp  <- bayesplot::log_posterior(normal_reg_no_pred)
+
+# Parallel coordinates with divergences highlighted in red
+# bayesplot::mcmc_parcoord(as.array(normal_reg_no_pred), np = np)
+
+# Pairs plot: look for funnel shapes
+bayesplot::mcmc_pairs(
+  as.array(normal_reg_no_pred), np = np,
+  pars = c("intercept", "slope", "sigma")
+)
+```
+
+**What to do with divergences:**
+
+1. Increase `adapt_delta` (try 0.95–0.99):
+   `sampling(..., control = list(adapt_delta = 0.95))`
+2. Use the non-centred parameterisation for hierarchical models (see Block 5)
+3. Review your priors — very diffuse priors on variance components are a common cause
+
+## Posterior predictive checks
+
+A posterior predictive check (PPc) asks: **if we simulate data from the fitted model,
+does it resemble our real data?**
+
+```{r}
+#| eval: false
+bill_depth_rep <- rstan::extract(reg_samp, pars = "bill_depth_rep")$bill_depth_rep
+y              <- peng$bill_depth_mm
+
+# Density overlay — the standard first check
+bayesplot::ppc_dens_overlay(y, head(bill_depth_rep, 50)) +
+  labs(title = "PPc: bill depth")
+
+# Check the mean
+bayesplot::ppc_stat(y, bill_depth_rep, stat = "mean")
+
+# Check the SD
+bayesplot::ppc_stat(y, bill_depth_rep, stat = "sd")
+
+# Observed vs average predicted
+bayesplot::ppc_scatter_avg(y, bill_depth_rep)
+```
+
+For count data, `ppc_rootogram()` is the most informative check:
+
+```{r}
+#| eval: false
+# (shown in Block 4 with count data)
+bayesplot::ppc_rootogram(y_count, yrep_count)
+```
+
+
+
+
 ## Posterior predictions in R
 
 We can calculate a posterior prediction line directly in R for these data.

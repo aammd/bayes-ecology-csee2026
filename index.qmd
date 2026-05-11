@@ -8,6 +8,9 @@ title: "Outline for the day"
 
 # Before we start
 
+
+IF you've struggled with installation, you can try to make a free Posit cloud account and use this link: https://posit.cloud/spaces/785969/join?access_code=nIieXAcLY-SQy-jmNIWqV16tn0K0RhgvRz-LvzR1 
+
 <!--
 ## Posit Cloud
 

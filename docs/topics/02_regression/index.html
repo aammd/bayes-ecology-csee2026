@@ -1920,233 +1920,349 @@ lp__      -395.35376822 -394.81515460 -394.305017 1993.948 1.0002518</code></pre
 <span id="cb35-304"><a href="#cb35-304" aria-hidden="true" tabindex="-1"></a>Do we have evidence that there's a relationship between bill length and bill depth.</span>
 <span id="cb35-305"><a href="#cb35-305" aria-hidden="true" tabindex="-1"></a>:::</span>
 <span id="cb35-306"><a href="#cb35-306" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb35-307"><a href="#cb35-307" aria-hidden="true" tabindex="-1"></a><span class="fu">## Posterior predictions in R</span></span>
+<span id="cb35-307"><a href="#cb35-307" aria-hidden="true" tabindex="-1"></a><span class="fu">## Model diagnostics</span></span>
 <span id="cb35-308"><a href="#cb35-308" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb35-309"><a href="#cb35-309" aria-hidden="true" tabindex="-1"></a>We can calculate a posterior prediction line directly in R for these data.</span>
-<span id="cb35-310"><a href="#cb35-310" aria-hidden="true" tabindex="-1"></a>I'll show each step in this workflow separately:</span>
+<span id="cb35-309"><a href="#cb35-309" aria-hidden="true" tabindex="-1"></a>When Stan's NUTS sampler runs it records information about how hard it had to work.</span>
+<span id="cb35-310"><a href="#cb35-310" aria-hidden="true" tabindex="-1"></a>These diagnostics are your first warning system.</span>
 <span id="cb35-311"><a href="#cb35-311" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb35-314"><a href="#cb35-314" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb35-315"><a href="#cb35-315" aria-hidden="true" tabindex="-1"></a>normal_reg_no_pred <span class="sc">|&gt;</span> </span>
-<span id="cb35-316"><a href="#cb35-316" aria-hidden="true" tabindex="-1"></a>  <span class="fu">spread_rvars</span>(slope, intercept, sigma)</span>
-<span id="cb35-317"><a href="#cb35-317" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb35-312"><a href="#cb35-312" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Diagnostic <span class="pp">|</span> What to look for <span class="pp">|</span> Bad sign <span class="pp">|</span></span>
+<span id="cb35-313"><a href="#cb35-313" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|---|</span></span>
+<span id="cb35-314"><a href="#cb35-314" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> **R-hat** ($\hat{R}$) <span class="pp">|</span> Chain convergence <span class="pp">|</span> &gt; 1.01 <span class="pp">|</span></span>
+<span id="cb35-315"><a href="#cb35-315" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> **Bulk ESS** <span class="pp">|</span> Effective samples in the bulk <span class="pp">|</span> &lt; 400 <span class="pp">|</span></span>
+<span id="cb35-316"><a href="#cb35-316" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> **Tail ESS** <span class="pp">|</span> Effective samples in the tails <span class="pp">|</span> &lt; 400 <span class="pp">|</span></span>
+<span id="cb35-317"><a href="#cb35-317" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> **Divergent transitions** <span class="pp">|</span> Numerical problems in HMC <span class="pp">|</span> Any &gt; 0 <span class="pp">|</span></span>
 <span id="cb35-318"><a href="#cb35-318" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb35-319"><a href="#cb35-319" aria-hidden="true" tabindex="-1"></a><span class="in">`tidybayes`</span> helps us extract the posterior distribution of the parameters into a convenient object called an <span class="in">`rvar`</span>. </span>
-<span id="cb35-320"><a href="#cb35-320" aria-hidden="true" tabindex="-1"></a>Learn more about tidybayes <span class="co">[</span><span class="ot">here</span><span class="co">](http://mjskay.github.io/tidybayes/articles/tidybayes.html)</span> and about the rvar datatype <span class="co">[</span><span class="ot">here</span><span class="co">](https://mc-stan.org/posterior/articles/rvar.html)</span></span>
-<span id="cb35-321"><a href="#cb35-321" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb35-322"><a href="#cb35-322" aria-hidden="true" tabindex="-1"></a>Next we combine these posteriors with a vector of observations to make a posterior distribution of LINES:</span>
-<span id="cb35-323"><a href="#cb35-323" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb35-324"><a href="#cb35-324" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb35-327"><a href="#cb35-327" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb35-328"><a href="#cb35-328" aria-hidden="true" tabindex="-1"></a>normal_reg_predline <span class="ot">&lt;-</span> normal_reg_no_pred <span class="sc">|&gt;</span> </span>
-<span id="cb35-329"><a href="#cb35-329" aria-hidden="true" tabindex="-1"></a>  tidybayes<span class="sc">::</span><span class="fu">spread_rvars</span>(slope, intercept) <span class="sc">|&gt;</span> </span>
-<span id="cb35-330"><a href="#cb35-330" aria-hidden="true" tabindex="-1"></a>  tidyr<span class="sc">::</span><span class="fu">expand_grid</span>(<span class="at">x =</span> <span class="fu">seq</span>(<span class="at">from =</span> <span class="sc">-</span><span class="dv">15</span>, <span class="at">to =</span> <span class="dv">15</span>, <span class="at">length.out =</span> <span class="dv">5</span>)) <span class="sc">|&gt;</span> </span>
-<span id="cb35-331"><a href="#cb35-331" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">mu =</span> intercept <span class="sc">+</span> slope<span class="sc">*</span>x)</span>
+<span id="cb35-321"><a href="#cb35-321" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb35-322"><a href="#cb35-322" aria-hidden="true" tabindex="-1"></a><span class="co">#| eval: true</span></span>
+<span id="cb35-323"><a href="#cb35-323" aria-hidden="true" tabindex="-1"></a><span class="co"># Full summary with diagnostics</span></span>
+<span id="cb35-324"><a href="#cb35-324" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(normal_reg_no_pred)</span>
+<span id="cb35-325"><a href="#cb35-325" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-326"><a href="#cb35-326" aria-hidden="true" tabindex="-1"></a><span class="co"># Check for divergences</span></span>
+<span id="cb35-327"><a href="#cb35-327" aria-hidden="true" tabindex="-1"></a>rstan<span class="sc">::</span><span class="fu">check_divergences</span>(normal_reg_no_pred)</span>
+<span id="cb35-328"><a href="#cb35-328" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-329"><a href="#cb35-329" aria-hidden="true" tabindex="-1"></a><span class="co"># Check Rhat and ESS for all parameters</span></span>
+<span id="cb35-330"><a href="#cb35-330" aria-hidden="true" tabindex="-1"></a>rstan<span class="sc">::</span><span class="fu">summary</span>(normal_reg_no_pred)<span class="sc">$</span>summary[, <span class="fu">c</span>(<span class="st">"Rhat"</span>, <span class="st">"n_eff"</span>)]</span>
+<span id="cb35-331"><a href="#cb35-331" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
 <span id="cb35-332"><a href="#cb35-332" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb35-333"><a href="#cb35-333" aria-hidden="true" tabindex="-1"></a>normal_reg_predline</span>
-<span id="cb35-334"><a href="#cb35-334" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb35-335"><a href="#cb35-335" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb35-336"><a href="#cb35-336" aria-hidden="true" tabindex="-1"></a>Finally we'll plot these:</span>
-<span id="cb35-337"><a href="#cb35-337" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb35-340"><a href="#cb35-340" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb35-341"><a href="#cb35-341" aria-hidden="true" tabindex="-1"></a>normal_reg_predline <span class="sc">|&gt;</span> </span>
-<span id="cb35-342"><a href="#cb35-342" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> x, <span class="at">dist =</span> mu)) <span class="sc">+</span> </span>
-<span id="cb35-343"><a href="#cb35-343" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stat_lineribbon</span>() <span class="sc">+</span> </span>
-<span id="cb35-344"><a href="#cb35-344" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">x =</span> bill_length_center, <span class="at">y =</span> bill_depth_mm),</span>
-<span id="cb35-345"><a href="#cb35-345" aria-hidden="true" tabindex="-1"></a>             <span class="at">inherit.aes =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb35-346"><a href="#cb35-346" aria-hidden="true" tabindex="-1"></a>             <span class="at">data =</span> penguins_no_NA)</span>
+<span id="cb35-333"><a href="#cb35-333" aria-hidden="true" tabindex="-1"></a><span class="fu">### What is R-hat?</span></span>
+<span id="cb35-334"><a href="#cb35-334" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-335"><a href="#cb35-335" aria-hidden="true" tabindex="-1"></a>$\hat{R}$ compares the variance *between* chains to the variance *within* chains.</span>
+<span id="cb35-336"><a href="#cb35-336" aria-hidden="true" tabindex="-1"></a>If all chains have converged to the same distribution, these should be equal and</span>
+<span id="cb35-337"><a href="#cb35-337" aria-hidden="true" tabindex="-1"></a>$\hat{R} \approx 1$.</span>
+<span id="cb35-338"><a href="#cb35-338" aria-hidden="true" tabindex="-1"></a>Values above 1.01 suggest the chains haven't mixed — the posterior you have is not</span>
+<span id="cb35-339"><a href="#cb35-339" aria-hidden="true" tabindex="-1"></a>the posterior you wanted.</span>
+<span id="cb35-340"><a href="#cb35-340" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-341"><a href="#cb35-341" aria-hidden="true" tabindex="-1"></a><span class="fu">### What is ESS?</span></span>
+<span id="cb35-342"><a href="#cb35-342" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-343"><a href="#cb35-343" aria-hidden="true" tabindex="-1"></a>Each MCMC draw is correlated with the draws around it. ESS (effective sample size) is the</span>
+<span id="cb35-344"><a href="#cb35-344" aria-hidden="true" tabindex="-1"></a>equivalent number of *independent* draws. An ESS of 400 is usually sufficient for reliable</span>
+<span id="cb35-345"><a href="#cb35-345" aria-hidden="true" tabindex="-1"></a>estimates of means and 95% intervals. The tail ESS specifically monitors the quality of</span>
+<span id="cb35-346"><a href="#cb35-346" aria-hidden="true" tabindex="-1"></a>extreme quantile estimates.</span>
 <span id="cb35-347"><a href="#cb35-347" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb35-348"><a href="#cb35-348" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb35-348"><a href="#cb35-348" aria-hidden="true" tabindex="-1"></a><span class="fu">### Traceplots</span></span>
 <span id="cb35-349"><a href="#cb35-349" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb35-350"><a href="#cb35-350" aria-hidden="true" tabindex="-1"></a><span class="fu">#### Using posterior draws individually</span></span>
-<span id="cb35-351"><a href="#cb35-351" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb35-352"><a href="#cb35-352" aria-hidden="true" tabindex="-1"></a>The above workflow makes a nice figure, but perhaps it helps to see the individual lines to understand what is happening here. </span>
-<span id="cb35-353"><a href="#cb35-353" aria-hidden="true" tabindex="-1"></a>We can get these with another tidybayes function <span class="in">`spread_draws`</span>:</span>
-<span id="cb35-354"><a href="#cb35-354" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb35-357"><a href="#cb35-357" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb35-358"><a href="#cb35-358" aria-hidden="true" tabindex="-1"></a>normal_reg_predline_draws <span class="ot">&lt;-</span> normal_reg_no_pred <span class="sc">|&gt;</span> </span>
-<span id="cb35-359"><a href="#cb35-359" aria-hidden="true" tabindex="-1"></a>  tidybayes<span class="sc">::</span><span class="fu">spread_draws</span>(slope, intercept, <span class="at">ndraws =</span> <span class="dv">12</span>)</span>
-<span id="cb35-360"><a href="#cb35-360" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb35-361"><a href="#cb35-361" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(normal_reg_predline_draws)</span>
-<span id="cb35-362"><a href="#cb35-362" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb35-363"><a href="#cb35-363" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb35-366"><a href="#cb35-366" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb35-367"><a href="#cb35-367" aria-hidden="true" tabindex="-1"></a>normal_reg_predline_draws <span class="sc">|&gt;</span> </span>
-<span id="cb35-368"><a href="#cb35-368" aria-hidden="true" tabindex="-1"></a>  tidyr<span class="sc">::</span><span class="fu">expand_grid</span>(<span class="at">x =</span> <span class="fu">seq</span>(<span class="at">from =</span> <span class="sc">-</span><span class="dv">15</span>, <span class="at">to =</span> <span class="dv">15</span>, <span class="at">length.out =</span> <span class="dv">5</span>)) <span class="sc">|&gt;</span> </span>
-<span id="cb35-369"><a href="#cb35-369" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">mu =</span> intercept <span class="sc">+</span> slope<span class="sc">*</span>x) <span class="sc">|&gt;</span> </span>
-<span id="cb35-370"><a href="#cb35-370" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> x, <span class="at">y =</span> mu, <span class="at">group =</span> .draw)) <span class="sc">+</span> </span>
-<span id="cb35-371"><a href="#cb35-371" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>() <span class="sc">+</span> </span>
-<span id="cb35-372"><a href="#cb35-372" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">x =</span> bill_length_center, <span class="at">y =</span> bill_depth_mm),</span>
-<span id="cb35-373"><a href="#cb35-373" aria-hidden="true" tabindex="-1"></a>             <span class="at">inherit.aes =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb35-374"><a href="#cb35-374" aria-hidden="true" tabindex="-1"></a>             <span class="at">data =</span> penguins_no_NA)</span>
-<span id="cb35-375"><a href="#cb35-375" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb35-350"><a href="#cb35-350" aria-hidden="true" tabindex="-1"></a>Traceplots show chain values over iterations. We want well-mixed "fuzzy caterpillars" —</span>
+<span id="cb35-351"><a href="#cb35-351" aria-hidden="true" tabindex="-1"></a>chains that overlap and wander freely.</span>
+<span id="cb35-352"><a href="#cb35-352" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-355"><a href="#cb35-355" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb35-356"><a href="#cb35-356" aria-hidden="true" tabindex="-1"></a><span class="co">#| eval: true</span></span>
+<span id="cb35-357"><a href="#cb35-357" aria-hidden="true" tabindex="-1"></a>bayesplot<span class="sc">::</span><span class="fu">mcmc_trace</span>(normal_reg_no_pred, <span class="at">pars =</span> <span class="fu">c</span>(<span class="st">"intercept"</span>, <span class="st">"slope"</span>, <span class="st">"sigma"</span>))</span>
+<span id="cb35-358"><a href="#cb35-358" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb35-359"><a href="#cb35-359" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-360"><a href="#cb35-360" aria-hidden="true" tabindex="-1"></a>A **poorly mixing** chain shows long stretches stuck in one region, or chains that</span>
+<span id="cb35-361"><a href="#cb35-361" aria-hidden="true" tabindex="-1"></a>separate from each other.</span>
+<span id="cb35-362"><a href="#cb35-362" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-363"><a href="#cb35-363" aria-hidden="true" tabindex="-1"></a><span class="fu">### Divergent transitions</span></span>
+<span id="cb35-364"><a href="#cb35-364" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-365"><a href="#cb35-365" aria-hidden="true" tabindex="-1"></a>Divergences are the most important diagnostic. Each one is flagged when the NUTS</span>
+<span id="cb35-366"><a href="#cb35-366" aria-hidden="true" tabindex="-1"></a>integrator strays from the true trajectory of the Hamiltonian system.</span>
+<span id="cb35-367"><a href="#cb35-367" aria-hidden="true" tabindex="-1"></a>They most commonly arise in hierarchical models with funnel-shaped posteriors.</span>
+<span id="cb35-368"><a href="#cb35-368" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-371"><a href="#cb35-371" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb35-372"><a href="#cb35-372" aria-hidden="true" tabindex="-1"></a><span class="co">#| eval: true</span></span>
+<span id="cb35-373"><a href="#cb35-373" aria-hidden="true" tabindex="-1"></a><span class="co"># Extract NUTS parameters for visualisation</span></span>
+<span id="cb35-374"><a href="#cb35-374" aria-hidden="true" tabindex="-1"></a>np  <span class="ot">&lt;-</span> bayesplot<span class="sc">::</span><span class="fu">nuts_params</span>(normal_reg_no_pred)</span>
+<span id="cb35-375"><a href="#cb35-375" aria-hidden="true" tabindex="-1"></a>lp  <span class="ot">&lt;-</span> bayesplot<span class="sc">::</span><span class="fu">log_posterior</span>(normal_reg_no_pred)</span>
 <span id="cb35-376"><a href="#cb35-376" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb35-377"><a href="#cb35-377" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb35-378"><a href="#cb35-378" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb35-379"><a href="#cb35-379" aria-hidden="true" tabindex="-1"></a><span class="fu">## Posterior predictions in Stan</span></span>
-<span id="cb35-380"><a href="#cb35-380" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb35-381"><a href="#cb35-381" aria-hidden="true" tabindex="-1"></a>We can also make these posterior predictions in Stan.</span>
-<span id="cb35-382"><a href="#cb35-382" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb35-383"><a href="#cb35-383" aria-hidden="true" tabindex="-1"></a>First, compile the model:</span>
-<span id="cb35-384"><a href="#cb35-384" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb35-387"><a href="#cb35-387" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb35-388"><a href="#cb35-388" aria-hidden="true" tabindex="-1"></a><span class="co">#| class-output: stan</span></span>
-<span id="cb35-389"><a href="#cb35-389" aria-hidden="true" tabindex="-1"></a>normal_regression <span class="ot">&lt;-</span> <span class="fu">stan_model</span>(<span class="at">file =</span> here<span class="sc">::</span><span class="fu">here</span>(<span class="st">"topics/02_regression/normal_regression.stan"</span>))</span>
-<span id="cb35-390"><a href="#cb35-390" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb35-391"><a href="#cb35-391" aria-hidden="true" tabindex="-1"></a>normal_regression</span>
-<span id="cb35-392"><a href="#cb35-392" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb35-377"><a href="#cb35-377" aria-hidden="true" tabindex="-1"></a><span class="co"># Parallel coordinates with divergences highlighted in red</span></span>
+<span id="cb35-378"><a href="#cb35-378" aria-hidden="true" tabindex="-1"></a><span class="co"># bayesplot::mcmc_parcoord(as.array(normal_reg_no_pred), np = np)</span></span>
+<span id="cb35-379"><a href="#cb35-379" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-380"><a href="#cb35-380" aria-hidden="true" tabindex="-1"></a><span class="co"># Pairs plot: look for funnel shapes</span></span>
+<span id="cb35-381"><a href="#cb35-381" aria-hidden="true" tabindex="-1"></a>bayesplot<span class="sc">::</span><span class="fu">mcmc_pairs</span>(</span>
+<span id="cb35-382"><a href="#cb35-382" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as.array</span>(normal_reg_no_pred), <span class="at">np =</span> np,</span>
+<span id="cb35-383"><a href="#cb35-383" aria-hidden="true" tabindex="-1"></a>  <span class="at">pars =</span> <span class="fu">c</span>(<span class="st">"intercept"</span>, <span class="st">"slope"</span>, <span class="st">"sigma"</span>)</span>
+<span id="cb35-384"><a href="#cb35-384" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb35-385"><a href="#cb35-385" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb35-386"><a href="#cb35-386" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-387"><a href="#cb35-387" aria-hidden="true" tabindex="-1"></a>**What to do with divergences:**</span>
+<span id="cb35-388"><a href="#cb35-388" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-389"><a href="#cb35-389" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>Increase <span class="in">`adapt_delta`</span> (try 0.95–0.99):</span>
+<span id="cb35-390"><a href="#cb35-390" aria-hidden="true" tabindex="-1"></a>   <span class="in">`sampling(..., control = list(adapt_delta = 0.95))`</span></span>
+<span id="cb35-391"><a href="#cb35-391" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>Use the non-centred parameterisation for hierarchical models (see Block 5)</span>
+<span id="cb35-392"><a href="#cb35-392" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>Review your priors — very diffuse priors on variance components are a common cause</span>
 <span id="cb35-393"><a href="#cb35-393" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb35-394"><a href="#cb35-394" aria-hidden="true" tabindex="-1"></a>Then prepare the data and feed it into the <span class="in">`sampling()`</span> function.</span>
+<span id="cb35-394"><a href="#cb35-394" aria-hidden="true" tabindex="-1"></a><span class="fu">## Posterior predictive checks</span></span>
 <span id="cb35-395"><a href="#cb35-395" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb35-398"><a href="#cb35-398" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb35-399"><a href="#cb35-399" aria-hidden="true" tabindex="-1"></a>penguins_no_NA <span class="ot">&lt;-</span> penguins <span class="sc">|&gt;</span> </span>
-<span id="cb35-400"><a href="#cb35-400" aria-hidden="true" tabindex="-1"></a>  tidyr<span class="sc">::</span><span class="fu">drop_na</span>(bill_depth_mm, bill_length_mm) <span class="sc">|&gt;</span> </span>
-<span id="cb35-401"><a href="#cb35-401" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">mutate</span>(</span>
-<span id="cb35-402"><a href="#cb35-402" aria-hidden="true" tabindex="-1"></a>    <span class="at">bill_length_center =</span> bill_length_mm <span class="sc">-</span> <span class="fu">mean</span>(bill_length_mm))</span>
-<span id="cb35-403"><a href="#cb35-403" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb35-404"><a href="#cb35-404" aria-hidden="true" tabindex="-1"></a>data_list <span class="ot">&lt;-</span> <span class="fu">with</span>(penguins_no_NA,</span>
-<span id="cb35-405"><a href="#cb35-405" aria-hidden="true" tabindex="-1"></a>     <span class="fu">list</span>(<span class="at">N =</span> <span class="fu">length</span>(bill_length_center),</span>
-<span id="cb35-406"><a href="#cb35-406" aria-hidden="true" tabindex="-1"></a>          <span class="at">bill_len =</span> bill_length_center,</span>
-<span id="cb35-407"><a href="#cb35-407" aria-hidden="true" tabindex="-1"></a>          <span class="at">bill_dep =</span> bill_depth_mm,</span>
-<span id="cb35-408"><a href="#cb35-408" aria-hidden="true" tabindex="-1"></a>          <span class="at">npost =</span> <span class="dv">6</span>,</span>
-<span id="cb35-409"><a href="#cb35-409" aria-hidden="true" tabindex="-1"></a>          <span class="at">pred_values =</span> modelr<span class="sc">::</span><span class="fu">seq_range</span>(penguins_no_NA<span class="sc">$</span>bill_length_center, <span class="at">n =</span> <span class="dv">6</span>)</span>
-<span id="cb35-410"><a href="#cb35-410" aria-hidden="true" tabindex="-1"></a>          ))</span>
-<span id="cb35-411"><a href="#cb35-411" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb35-412"><a href="#cb35-412" aria-hidden="true" tabindex="-1"></a>bill_norm_reg <span class="ot">&lt;-</span> <span class="fu">sampling</span>(normal_regression,</span>
-<span id="cb35-413"><a href="#cb35-413" aria-hidden="true" tabindex="-1"></a>                          <span class="at">data =</span> data_list, </span>
-<span id="cb35-414"><a href="#cb35-414" aria-hidden="true" tabindex="-1"></a>                          <span class="at">refresh =</span> <span class="dv">0</span>)</span>
-<span id="cb35-415"><a href="#cb35-415" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb35-416"><a href="#cb35-416" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb35-417"><a href="#cb35-417" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb35-420"><a href="#cb35-420" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb35-421"><a href="#cb35-421" aria-hidden="true" tabindex="-1"></a><span class="co">#| layout-ncol: 2</span></span>
-<span id="cb35-422"><a href="#cb35-422" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
-<span id="cb35-423"><a href="#cb35-423" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb35-424"><a href="#cb35-424" aria-hidden="true" tabindex="-1"></a>bill_posterior <span class="ot">&lt;-</span> bill_norm_reg <span class="sc">|&gt;</span> </span>
-<span id="cb35-425"><a href="#cb35-425" aria-hidden="true" tabindex="-1"></a>  tidybayes<span class="sc">::</span><span class="fu">spread_rvars</span>(post_bill_dep_average[i],</span>
-<span id="cb35-426"><a href="#cb35-426" aria-hidden="true" tabindex="-1"></a>                          post_bill_dep_obs[i]) <span class="sc">|&gt;</span></span>
-<span id="cb35-427"><a href="#cb35-427" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">bill_length =</span> data_list<span class="sc">$</span>pred_values[i]) </span>
-<span id="cb35-428"><a href="#cb35-428" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb35-429"><a href="#cb35-429" aria-hidden="true" tabindex="-1"></a>bill_posterior <span class="sc">|&gt;</span> </span>
-<span id="cb35-430"><a href="#cb35-430" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> bill_length, <span class="at">dist =</span> post_bill_dep_average)) <span class="sc">+</span> </span>
-<span id="cb35-431"><a href="#cb35-431" aria-hidden="true" tabindex="-1"></a>  tidybayes<span class="sc">::</span><span class="fu">stat_lineribbon</span>() <span class="sc">+</span> </span>
-<span id="cb35-432"><a href="#cb35-432" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">x =</span> bill_length_center, <span class="at">y =</span> bill_depth_mm),</span>
-<span id="cb35-433"><a href="#cb35-433" aria-hidden="true" tabindex="-1"></a>             <span class="at">data =</span> penguins_no_NA, </span>
-<span id="cb35-434"><a href="#cb35-434" aria-hidden="true" tabindex="-1"></a>             <span class="at">inherit.aes =</span> <span class="cn">FALSE</span>) <span class="sc">+</span> </span>
-<span id="cb35-435"><a href="#cb35-435" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_brewer</span>(<span class="at">palette =</span> <span class="st">"Greens"</span>, <span class="at">direction =</span> <span class="sc">-</span><span class="dv">1</span>, <span class="at">guide =</span> <span class="st">"none"</span>) <span class="sc">+</span> </span>
-<span id="cb35-436"><a href="#cb35-436" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Average response"</span>)</span>
+<span id="cb35-396"><a href="#cb35-396" aria-hidden="true" tabindex="-1"></a>A posterior predictive check (PPc) asks: **if we simulate data from the fitted model,</span>
+<span id="cb35-397"><a href="#cb35-397" aria-hidden="true" tabindex="-1"></a>does it resemble our real data?**</span>
+<span id="cb35-398"><a href="#cb35-398" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-401"><a href="#cb35-401" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb35-402"><a href="#cb35-402" aria-hidden="true" tabindex="-1"></a><span class="co">#| eval: false</span></span>
+<span id="cb35-403"><a href="#cb35-403" aria-hidden="true" tabindex="-1"></a>bill_depth_rep <span class="ot">&lt;-</span> rstan<span class="sc">::</span><span class="fu">extract</span>(reg_samp, <span class="at">pars =</span> <span class="st">"bill_depth_rep"</span>)<span class="sc">$</span>bill_depth_rep</span>
+<span id="cb35-404"><a href="#cb35-404" aria-hidden="true" tabindex="-1"></a>y              <span class="ot">&lt;-</span> peng<span class="sc">$</span>bill_depth_mm</span>
+<span id="cb35-405"><a href="#cb35-405" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-406"><a href="#cb35-406" aria-hidden="true" tabindex="-1"></a><span class="co"># Density overlay — the standard first check</span></span>
+<span id="cb35-407"><a href="#cb35-407" aria-hidden="true" tabindex="-1"></a>bayesplot<span class="sc">::</span><span class="fu">ppc_dens_overlay</span>(y, <span class="fu">head</span>(bill_depth_rep, <span class="dv">50</span>)) <span class="sc">+</span></span>
+<span id="cb35-408"><a href="#cb35-408" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"PPc: bill depth"</span>)</span>
+<span id="cb35-409"><a href="#cb35-409" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-410"><a href="#cb35-410" aria-hidden="true" tabindex="-1"></a><span class="co"># Check the mean</span></span>
+<span id="cb35-411"><a href="#cb35-411" aria-hidden="true" tabindex="-1"></a>bayesplot<span class="sc">::</span><span class="fu">ppc_stat</span>(y, bill_depth_rep, <span class="at">stat =</span> <span class="st">"mean"</span>)</span>
+<span id="cb35-412"><a href="#cb35-412" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-413"><a href="#cb35-413" aria-hidden="true" tabindex="-1"></a><span class="co"># Check the SD</span></span>
+<span id="cb35-414"><a href="#cb35-414" aria-hidden="true" tabindex="-1"></a>bayesplot<span class="sc">::</span><span class="fu">ppc_stat</span>(y, bill_depth_rep, <span class="at">stat =</span> <span class="st">"sd"</span>)</span>
+<span id="cb35-415"><a href="#cb35-415" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-416"><a href="#cb35-416" aria-hidden="true" tabindex="-1"></a><span class="co"># Observed vs average predicted</span></span>
+<span id="cb35-417"><a href="#cb35-417" aria-hidden="true" tabindex="-1"></a>bayesplot<span class="sc">::</span><span class="fu">ppc_scatter_avg</span>(y, bill_depth_rep)</span>
+<span id="cb35-418"><a href="#cb35-418" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb35-419"><a href="#cb35-419" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-420"><a href="#cb35-420" aria-hidden="true" tabindex="-1"></a>For count data, <span class="in">`ppc_rootogram()`</span> is the most informative check:</span>
+<span id="cb35-421"><a href="#cb35-421" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-424"><a href="#cb35-424" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb35-425"><a href="#cb35-425" aria-hidden="true" tabindex="-1"></a><span class="co">#| eval: false</span></span>
+<span id="cb35-426"><a href="#cb35-426" aria-hidden="true" tabindex="-1"></a><span class="co"># (shown in Block 4 with count data)</span></span>
+<span id="cb35-427"><a href="#cb35-427" aria-hidden="true" tabindex="-1"></a>bayesplot<span class="sc">::</span><span class="fu">ppc_rootogram</span>(y_count, yrep_count)</span>
+<span id="cb35-428"><a href="#cb35-428" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb35-429"><a href="#cb35-429" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-430"><a href="#cb35-430" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-431"><a href="#cb35-431" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-432"><a href="#cb35-432" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-433"><a href="#cb35-433" aria-hidden="true" tabindex="-1"></a><span class="fu">## Posterior predictions in R</span></span>
+<span id="cb35-434"><a href="#cb35-434" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-435"><a href="#cb35-435" aria-hidden="true" tabindex="-1"></a>We can calculate a posterior prediction line directly in R for these data.</span>
+<span id="cb35-436"><a href="#cb35-436" aria-hidden="true" tabindex="-1"></a>I'll show each step in this workflow separately:</span>
 <span id="cb35-437"><a href="#cb35-437" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb35-438"><a href="#cb35-438" aria-hidden="true" tabindex="-1"></a>bill_posterior <span class="sc">|&gt;</span> </span>
-<span id="cb35-439"><a href="#cb35-439" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> bill_length, <span class="at">dist =</span> post_bill_dep_obs)) <span class="sc">+</span> </span>
-<span id="cb35-440"><a href="#cb35-440" aria-hidden="true" tabindex="-1"></a>  tidybayes<span class="sc">::</span><span class="fu">stat_lineribbon</span>() <span class="sc">+</span> </span>
-<span id="cb35-441"><a href="#cb35-441" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">x =</span> bill_length_center, <span class="at">y =</span> bill_depth_mm),</span>
-<span id="cb35-442"><a href="#cb35-442" aria-hidden="true" tabindex="-1"></a>             <span class="at">data =</span> penguins_no_NA, </span>
-<span id="cb35-443"><a href="#cb35-443" aria-hidden="true" tabindex="-1"></a>             <span class="at">inherit.aes =</span> <span class="cn">FALSE</span>) <span class="sc">+</span> </span>
-<span id="cb35-444"><a href="#cb35-444" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_brewer</span>(<span class="at">palette =</span> <span class="st">"Greens"</span>, <span class="at">direction =</span> <span class="sc">-</span><span class="dv">1</span>, <span class="at">guide =</span> <span class="st">"none"</span>) <span class="sc">+</span></span>
-<span id="cb35-445"><a href="#cb35-445" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Predicted observations"</span>)</span>
-<span id="cb35-446"><a href="#cb35-446" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb35-447"><a href="#cb35-447" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb35-448"><a href="#cb35-448" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb35-449"><a href="#cb35-449" aria-hidden="true" tabindex="-1"></a>:::{.callout-tip}</span>
-<span id="cb35-450"><a href="#cb35-450" aria-hidden="true" tabindex="-1"></a><span class="fu">### EXERCISE</span></span>
-<span id="cb35-451"><a href="#cb35-451" aria-hidden="true" tabindex="-1"></a>Extend this model to include species. Specifically, let each species have its own value of the <span class="in">`intercept`</span>. This involves combining this regression example with the previous activity on discrete predictors.</span>
-<span id="cb35-452"><a href="#cb35-452" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb35-453"><a href="#cb35-453" aria-hidden="true" tabindex="-1"></a>When you're done, look at the resulting summary of coefficients. What do you notice that's different?</span>
-<span id="cb35-454"><a href="#cb35-454" aria-hidden="true" tabindex="-1"></a>::: </span>
-<span id="cb35-455"><a href="#cb35-455" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb35-456"><a href="#cb35-456" aria-hidden="true" tabindex="-1"></a>:::{.callout-note collapse="true"}</span>
-<span id="cb35-457"><a href="#cb35-457" aria-hidden="true" tabindex="-1"></a><span class="fu">### SOLUTION</span></span>
-<span id="cb35-458"><a href="#cb35-458" aria-hidden="true" tabindex="-1"></a><span class="in">```{r, include=TRUE}</span></span>
-<span id="cb35-459"><a href="#cb35-459" aria-hidden="true" tabindex="-1"></a><span class="co">#| class-output: stan</span></span>
-<span id="cb35-460"><a href="#cb35-460" aria-hidden="true" tabindex="-1"></a>normal_regression_spp <span class="ot">&lt;-</span> <span class="fu">stan_model</span>(<span class="at">file =</span> here<span class="sc">::</span><span class="fu">here</span>(<span class="st">"topics/02_regression/normal_regression_spp.stan"</span>),</span>
-<span id="cb35-461"><a href="#cb35-461" aria-hidden="true" tabindex="-1"></a>                                    <span class="at">model_name =</span> <span class="st">"normal_regression_spp"</span>)</span>
-<span id="cb35-462"><a href="#cb35-462" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb35-463"><a href="#cb35-463" aria-hidden="true" tabindex="-1"></a>normal_regression_spp</span>
-<span id="cb35-464"><a href="#cb35-464" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb35-465"><a href="#cb35-465" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb35-466"><a href="#cb35-466" aria-hidden="true" tabindex="-1"></a>We set up a list for this model just as we did before. </span>
-<span id="cb35-467"><a href="#cb35-467" aria-hidden="true" tabindex="-1"></a>Note that this time we are using TRIPLE the <span class="in">`pred_values`</span>, because we want to run independent predictions for each species.</span>
-<span id="cb35-468"><a href="#cb35-468" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb35-469"><a href="#cb35-469" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb35-472"><a href="#cb35-472" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb35-473"><a href="#cb35-473" aria-hidden="true" tabindex="-1"></a>bill_vec <span class="ot">&lt;-</span> modelr<span class="sc">::</span><span class="fu">seq_range</span>(penguins_no_NA<span class="sc">$</span>bill_length_center, <span class="at">n =</span> <span class="dv">6</span>)</span>
-<span id="cb35-474"><a href="#cb35-474" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb35-475"><a href="#cb35-475" aria-hidden="true" tabindex="-1"></a>data_list_spp <span class="ot">&lt;-</span> <span class="fu">with</span>(penguins_no_NA,</span>
-<span id="cb35-476"><a href="#cb35-476" aria-hidden="true" tabindex="-1"></a>     <span class="fu">list</span>(<span class="at">N =</span> <span class="fu">length</span>(bill_length_center),</span>
-<span id="cb35-477"><a href="#cb35-477" aria-hidden="true" tabindex="-1"></a>          <span class="at">bill_len =</span> bill_length_center,</span>
-<span id="cb35-478"><a href="#cb35-478" aria-hidden="true" tabindex="-1"></a>          <span class="at">bill_dep =</span> bill_depth_mm,</span>
-<span id="cb35-479"><a href="#cb35-479" aria-hidden="true" tabindex="-1"></a>          <span class="at">spp_id =</span> <span class="fu">as.numeric</span>(<span class="fu">as.factor</span>(species)),</span>
-<span id="cb35-480"><a href="#cb35-480" aria-hidden="true" tabindex="-1"></a>          <span class="at">npost =</span> <span class="dv">3</span><span class="sc">*</span><span class="dv">6</span>,</span>
-<span id="cb35-481"><a href="#cb35-481" aria-hidden="true" tabindex="-1"></a>          <span class="at">pred_values =</span> <span class="fu">rep</span>(bill_vec, <span class="dv">3</span>),</span>
-<span id="cb35-482"><a href="#cb35-482" aria-hidden="true" tabindex="-1"></a>          <span class="at">pred_spp_id =</span> <span class="fu">rep</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>, <span class="at">each =</span> <span class="dv">6</span>)</span>
-<span id="cb35-483"><a href="#cb35-483" aria-hidden="true" tabindex="-1"></a>          ))</span>
-<span id="cb35-484"><a href="#cb35-484" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb35-485"><a href="#cb35-485" aria-hidden="true" tabindex="-1"></a>normal_reg_spp_post <span class="ot">&lt;-</span> <span class="fu">sampling</span>(normal_regression_spp,</span>
-<span id="cb35-486"><a href="#cb35-486" aria-hidden="true" tabindex="-1"></a>                                <span class="at">data =</span> data_list_spp, <span class="at">refresh =</span> <span class="dv">0</span>)</span>
-<span id="cb35-487"><a href="#cb35-487" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-440"><a href="#cb35-440" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb35-441"><a href="#cb35-441" aria-hidden="true" tabindex="-1"></a>normal_reg_no_pred <span class="sc">|&gt;</span> </span>
+<span id="cb35-442"><a href="#cb35-442" aria-hidden="true" tabindex="-1"></a>  <span class="fu">spread_rvars</span>(slope, intercept, sigma)</span>
+<span id="cb35-443"><a href="#cb35-443" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb35-444"><a href="#cb35-444" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-445"><a href="#cb35-445" aria-hidden="true" tabindex="-1"></a><span class="in">`tidybayes`</span> helps us extract the posterior distribution of the parameters into a convenient object called an <span class="in">`rvar`</span>. </span>
+<span id="cb35-446"><a href="#cb35-446" aria-hidden="true" tabindex="-1"></a>Learn more about tidybayes <span class="co">[</span><span class="ot">here</span><span class="co">](http://mjskay.github.io/tidybayes/articles/tidybayes.html)</span> and about the rvar datatype <span class="co">[</span><span class="ot">here</span><span class="co">](https://mc-stan.org/posterior/articles/rvar.html)</span></span>
+<span id="cb35-447"><a href="#cb35-447" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-448"><a href="#cb35-448" aria-hidden="true" tabindex="-1"></a>Next we combine these posteriors with a vector of observations to make a posterior distribution of LINES:</span>
+<span id="cb35-449"><a href="#cb35-449" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-450"><a href="#cb35-450" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-453"><a href="#cb35-453" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb35-454"><a href="#cb35-454" aria-hidden="true" tabindex="-1"></a>normal_reg_predline <span class="ot">&lt;-</span> normal_reg_no_pred <span class="sc">|&gt;</span> </span>
+<span id="cb35-455"><a href="#cb35-455" aria-hidden="true" tabindex="-1"></a>  tidybayes<span class="sc">::</span><span class="fu">spread_rvars</span>(slope, intercept) <span class="sc">|&gt;</span> </span>
+<span id="cb35-456"><a href="#cb35-456" aria-hidden="true" tabindex="-1"></a>  tidyr<span class="sc">::</span><span class="fu">expand_grid</span>(<span class="at">x =</span> <span class="fu">seq</span>(<span class="at">from =</span> <span class="sc">-</span><span class="dv">15</span>, <span class="at">to =</span> <span class="dv">15</span>, <span class="at">length.out =</span> <span class="dv">5</span>)) <span class="sc">|&gt;</span> </span>
+<span id="cb35-457"><a href="#cb35-457" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">mu =</span> intercept <span class="sc">+</span> slope<span class="sc">*</span>x)</span>
+<span id="cb35-458"><a href="#cb35-458" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-459"><a href="#cb35-459" aria-hidden="true" tabindex="-1"></a>normal_reg_predline</span>
+<span id="cb35-460"><a href="#cb35-460" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb35-461"><a href="#cb35-461" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-462"><a href="#cb35-462" aria-hidden="true" tabindex="-1"></a>Finally we'll plot these:</span>
+<span id="cb35-463"><a href="#cb35-463" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-466"><a href="#cb35-466" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb35-467"><a href="#cb35-467" aria-hidden="true" tabindex="-1"></a>normal_reg_predline <span class="sc">|&gt;</span> </span>
+<span id="cb35-468"><a href="#cb35-468" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> x, <span class="at">dist =</span> mu)) <span class="sc">+</span> </span>
+<span id="cb35-469"><a href="#cb35-469" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stat_lineribbon</span>() <span class="sc">+</span> </span>
+<span id="cb35-470"><a href="#cb35-470" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">x =</span> bill_length_center, <span class="at">y =</span> bill_depth_mm),</span>
+<span id="cb35-471"><a href="#cb35-471" aria-hidden="true" tabindex="-1"></a>             <span class="at">inherit.aes =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb35-472"><a href="#cb35-472" aria-hidden="true" tabindex="-1"></a>             <span class="at">data =</span> penguins_no_NA)</span>
+<span id="cb35-473"><a href="#cb35-473" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-474"><a href="#cb35-474" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb35-475"><a href="#cb35-475" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-476"><a href="#cb35-476" aria-hidden="true" tabindex="-1"></a><span class="fu">#### Using posterior draws individually</span></span>
+<span id="cb35-477"><a href="#cb35-477" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-478"><a href="#cb35-478" aria-hidden="true" tabindex="-1"></a>The above workflow makes a nice figure, but perhaps it helps to see the individual lines to understand what is happening here. </span>
+<span id="cb35-479"><a href="#cb35-479" aria-hidden="true" tabindex="-1"></a>We can get these with another tidybayes function <span class="in">`spread_draws`</span>:</span>
+<span id="cb35-480"><a href="#cb35-480" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-483"><a href="#cb35-483" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb35-484"><a href="#cb35-484" aria-hidden="true" tabindex="-1"></a>normal_reg_predline_draws <span class="ot">&lt;-</span> normal_reg_no_pred <span class="sc">|&gt;</span> </span>
+<span id="cb35-485"><a href="#cb35-485" aria-hidden="true" tabindex="-1"></a>  tidybayes<span class="sc">::</span><span class="fu">spread_draws</span>(slope, intercept, <span class="at">ndraws =</span> <span class="dv">12</span>)</span>
+<span id="cb35-486"><a href="#cb35-486" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-487"><a href="#cb35-487" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(normal_reg_predline_draws)</span>
 <span id="cb35-488"><a href="#cb35-488" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
 <span id="cb35-489"><a href="#cb35-489" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb35-490"><a href="#cb35-490" aria-hidden="true" tabindex="-1"></a>Note that the sign of the slope is different now! </span>
-<span id="cb35-491"><a href="#cb35-491" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb35-494"><a href="#cb35-494" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb35-495"><a href="#cb35-495" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(normal_reg_spp_post)<span class="sc">$</span>summary <span class="sc">|&gt;</span> </span>
-<span id="cb35-496"><a href="#cb35-496" aria-hidden="true" tabindex="-1"></a>  <span class="fu">head</span>(<span class="dv">5</span>) <span class="sc">|&gt;</span></span>
-<span id="cb35-497"><a href="#cb35-497" aria-hidden="true" tabindex="-1"></a>  knitr<span class="sc">::</span><span class="fu">kable</span>()</span>
-<span id="cb35-498"><a href="#cb35-498" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb35-499"><a href="#cb35-499" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb35-500"><a href="#cb35-500" aria-hidden="true" tabindex="-1"></a>:::</span>
-<span id="cb35-501"><a href="#cb35-501" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb35-502"><a href="#cb35-502" aria-hidden="true" tabindex="-1"></a><span class="fu">### Plotting posterior predictions</span></span>
+<span id="cb35-492"><a href="#cb35-492" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb35-493"><a href="#cb35-493" aria-hidden="true" tabindex="-1"></a>normal_reg_predline_draws <span class="sc">|&gt;</span> </span>
+<span id="cb35-494"><a href="#cb35-494" aria-hidden="true" tabindex="-1"></a>  tidyr<span class="sc">::</span><span class="fu">expand_grid</span>(<span class="at">x =</span> <span class="fu">seq</span>(<span class="at">from =</span> <span class="sc">-</span><span class="dv">15</span>, <span class="at">to =</span> <span class="dv">15</span>, <span class="at">length.out =</span> <span class="dv">5</span>)) <span class="sc">|&gt;</span> </span>
+<span id="cb35-495"><a href="#cb35-495" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">mu =</span> intercept <span class="sc">+</span> slope<span class="sc">*</span>x) <span class="sc">|&gt;</span> </span>
+<span id="cb35-496"><a href="#cb35-496" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> x, <span class="at">y =</span> mu, <span class="at">group =</span> .draw)) <span class="sc">+</span> </span>
+<span id="cb35-497"><a href="#cb35-497" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>() <span class="sc">+</span> </span>
+<span id="cb35-498"><a href="#cb35-498" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">x =</span> bill_length_center, <span class="at">y =</span> bill_depth_mm),</span>
+<span id="cb35-499"><a href="#cb35-499" aria-hidden="true" tabindex="-1"></a>             <span class="at">inherit.aes =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb35-500"><a href="#cb35-500" aria-hidden="true" tabindex="-1"></a>             <span class="at">data =</span> penguins_no_NA)</span>
+<span id="cb35-501"><a href="#cb35-501" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb35-502"><a href="#cb35-502" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb35-503"><a href="#cb35-503" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb35-504"><a href="#cb35-504" aria-hidden="true" tabindex="-1"></a>Using <span class="in">`stat_lineribbon()`</span>, let's plot the average and predicted intervals for this regression.</span>
-<span id="cb35-505"><a href="#cb35-505" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb35-508"><a href="#cb35-508" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb35-509"><a href="#cb35-509" aria-hidden="true" tabindex="-1"></a><span class="co">#| layout-ncol: 2</span></span>
-<span id="cb35-510"><a href="#cb35-510" aria-hidden="true" tabindex="-1"></a><span class="co">#| warning: false</span></span>
-<span id="cb35-511"><a href="#cb35-511" aria-hidden="true" tabindex="-1"></a>bill_posterior <span class="ot">&lt;-</span> normal_reg_spp_post <span class="sc">|&gt;</span> </span>
-<span id="cb35-512"><a href="#cb35-512" aria-hidden="true" tabindex="-1"></a>  tidybayes<span class="sc">::</span><span class="fu">spread_rvars</span>(post_bill_dep_average[i],</span>
-<span id="cb35-513"><a href="#cb35-513" aria-hidden="true" tabindex="-1"></a>                          post_bill_dep_obs[i]) <span class="sc">|&gt;</span></span>
-<span id="cb35-514"><a href="#cb35-514" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">bill_length =</span> data_list_spp<span class="sc">$</span>pred_values[i],</span>
-<span id="cb35-515"><a href="#cb35-515" aria-hidden="true" tabindex="-1"></a>         <span class="at">spp =</span> data_list_spp<span class="sc">$</span>pred_spp_id) <span class="sc">|&gt;</span> </span>
-<span id="cb35-516"><a href="#cb35-516" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">spp =</span> <span class="fu">as.factor</span>(<span class="fu">levels</span>(penguins<span class="sc">$</span>species)[spp]))</span>
-<span id="cb35-517"><a href="#cb35-517" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb35-518"><a href="#cb35-518" aria-hidden="true" tabindex="-1"></a>bill_posterior <span class="sc">|&gt;</span> </span>
-<span id="cb35-519"><a href="#cb35-519" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> bill_length,</span>
-<span id="cb35-520"><a href="#cb35-520" aria-hidden="true" tabindex="-1"></a>             <span class="at">ydist =</span> post_bill_dep_average,</span>
-<span id="cb35-521"><a href="#cb35-521" aria-hidden="true" tabindex="-1"></a>             <span class="at">fill =</span> spp, </span>
-<span id="cb35-522"><a href="#cb35-522" aria-hidden="true" tabindex="-1"></a>             <span class="at">colour =</span> spp)) <span class="sc">+</span> </span>
-<span id="cb35-523"><a href="#cb35-523" aria-hidden="true" tabindex="-1"></a>  tidybayes<span class="sc">::</span><span class="fu">stat_lineribbon</span>() <span class="sc">+</span> </span>
-<span id="cb35-524"><a href="#cb35-524" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">x =</span> bill_length_center,</span>
-<span id="cb35-525"><a href="#cb35-525" aria-hidden="true" tabindex="-1"></a>                 <span class="at">y =</span> bill_depth_mm,</span>
-<span id="cb35-526"><a href="#cb35-526" aria-hidden="true" tabindex="-1"></a>                 <span class="at">fill =</span> species, <span class="at">colour =</span> species),</span>
-<span id="cb35-527"><a href="#cb35-527" aria-hidden="true" tabindex="-1"></a>             <span class="at">data =</span> penguins_no_NA, </span>
-<span id="cb35-528"><a href="#cb35-528" aria-hidden="true" tabindex="-1"></a>             <span class="at">inherit.aes =</span> <span class="cn">FALSE</span>) <span class="sc">+</span>   </span>
-<span id="cb35-529"><a href="#cb35-529" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_brewer</span>(<span class="at">palette =</span> <span class="st">"Set2"</span>) <span class="sc">+</span></span>
-<span id="cb35-530"><a href="#cb35-530" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_brewer</span>(<span class="at">palette =</span> <span class="st">"Dark2"</span>) <span class="sc">+</span> </span>
-<span id="cb35-531"><a href="#cb35-531" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Average response"</span>)</span>
-<span id="cb35-532"><a href="#cb35-532" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb35-533"><a href="#cb35-533" aria-hidden="true" tabindex="-1"></a>bill_posterior <span class="sc">|&gt;</span> </span>
-<span id="cb35-534"><a href="#cb35-534" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> bill_length,</span>
-<span id="cb35-535"><a href="#cb35-535" aria-hidden="true" tabindex="-1"></a>             <span class="at">dist =</span> post_bill_dep_obs,</span>
-<span id="cb35-536"><a href="#cb35-536" aria-hidden="true" tabindex="-1"></a>             <span class="at">fill =</span> spp,</span>
-<span id="cb35-537"><a href="#cb35-537" aria-hidden="true" tabindex="-1"></a>             <span class="at">colour =</span> spp)) <span class="sc">+</span> </span>
-<span id="cb35-538"><a href="#cb35-538" aria-hidden="true" tabindex="-1"></a>  tidybayes<span class="sc">::</span><span class="fu">stat_lineribbon</span>() <span class="sc">+</span> </span>
-<span id="cb35-539"><a href="#cb35-539" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">x =</span> bill_length_center,</span>
-<span id="cb35-540"><a href="#cb35-540" aria-hidden="true" tabindex="-1"></a>                 <span class="at">y =</span> bill_depth_mm,</span>
-<span id="cb35-541"><a href="#cb35-541" aria-hidden="true" tabindex="-1"></a>                 <span class="at">colour =</span> species),</span>
-<span id="cb35-542"><a href="#cb35-542" aria-hidden="true" tabindex="-1"></a>             <span class="at">data =</span> penguins_no_NA, </span>
-<span id="cb35-543"><a href="#cb35-543" aria-hidden="true" tabindex="-1"></a>             <span class="at">inherit.aes =</span> <span class="cn">FALSE</span>) <span class="sc">+</span> </span>
-<span id="cb35-544"><a href="#cb35-544" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_brewer</span>(<span class="at">palette =</span> <span class="st">"Set2"</span>) <span class="sc">+</span></span>
-<span id="cb35-545"><a href="#cb35-545" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_brewer</span>(<span class="at">palette =</span> <span class="st">"Dark2"</span>) <span class="sc">+</span> </span>
-<span id="cb35-546"><a href="#cb35-546" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Predicted observations"</span>) <span class="sc">+</span> </span>
-<span id="cb35-547"><a href="#cb35-547" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>spp, <span class="at">ncol =</span> <span class="dv">1</span>)</span>
-<span id="cb35-548"><a href="#cb35-548" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb35-549"><a href="#cb35-549" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb35-550"><a href="#cb35-550" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb35-551"><a href="#cb35-551" aria-hidden="true" tabindex="-1"></a><span class="fu">## Exercise! </span></span>
-<span id="cb35-552"><a href="#cb35-552" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb35-553"><a href="#cb35-553" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>We have one model without species identity as an independent variable, and one which includes species. Look at the difference in $\sigma$ between these two models. Why did the value change? </span>
-<span id="cb35-554"><a href="#cb35-554" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>**Posterior predictions** Edit the generated quantities blocks of <span class="in">`normal_regression.stan`</span> and <span class="in">`normal_regression_spp.stan`</span>  to create replicate observations for all N observations (that is, <span class="in">`yrep`</span> as we did in the model of <span class="co">[</span><span class="ot">bill depth previously</span><span class="co">](../discrete_predictor/index.qmd)</span>). Use this to compare the models using <span class="in">`bayesplot::ppc_dens_overlay()`</span> or another function from the bayesplot package.</span>
-<span id="cb35-555"><a href="#cb35-555" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-504"><a href="#cb35-504" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-505"><a href="#cb35-505" aria-hidden="true" tabindex="-1"></a><span class="fu">## Posterior predictions in Stan</span></span>
+<span id="cb35-506"><a href="#cb35-506" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-507"><a href="#cb35-507" aria-hidden="true" tabindex="-1"></a>We can also make these posterior predictions in Stan.</span>
+<span id="cb35-508"><a href="#cb35-508" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-509"><a href="#cb35-509" aria-hidden="true" tabindex="-1"></a>First, compile the model:</span>
+<span id="cb35-510"><a href="#cb35-510" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-513"><a href="#cb35-513" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb35-514"><a href="#cb35-514" aria-hidden="true" tabindex="-1"></a><span class="co">#| class-output: stan</span></span>
+<span id="cb35-515"><a href="#cb35-515" aria-hidden="true" tabindex="-1"></a>normal_regression <span class="ot">&lt;-</span> <span class="fu">stan_model</span>(<span class="at">file =</span> here<span class="sc">::</span><span class="fu">here</span>(<span class="st">"topics/02_regression/normal_regression.stan"</span>))</span>
+<span id="cb35-516"><a href="#cb35-516" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-517"><a href="#cb35-517" aria-hidden="true" tabindex="-1"></a>normal_regression</span>
+<span id="cb35-518"><a href="#cb35-518" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb35-519"><a href="#cb35-519" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-520"><a href="#cb35-520" aria-hidden="true" tabindex="-1"></a>Then prepare the data and feed it into the <span class="in">`sampling()`</span> function.</span>
+<span id="cb35-521"><a href="#cb35-521" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-524"><a href="#cb35-524" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb35-525"><a href="#cb35-525" aria-hidden="true" tabindex="-1"></a>penguins_no_NA <span class="ot">&lt;-</span> penguins <span class="sc">|&gt;</span> </span>
+<span id="cb35-526"><a href="#cb35-526" aria-hidden="true" tabindex="-1"></a>  tidyr<span class="sc">::</span><span class="fu">drop_na</span>(bill_depth_mm, bill_length_mm) <span class="sc">|&gt;</span> </span>
+<span id="cb35-527"><a href="#cb35-527" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">mutate</span>(</span>
+<span id="cb35-528"><a href="#cb35-528" aria-hidden="true" tabindex="-1"></a>    <span class="at">bill_length_center =</span> bill_length_mm <span class="sc">-</span> <span class="fu">mean</span>(bill_length_mm))</span>
+<span id="cb35-529"><a href="#cb35-529" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-530"><a href="#cb35-530" aria-hidden="true" tabindex="-1"></a>data_list <span class="ot">&lt;-</span> <span class="fu">with</span>(penguins_no_NA,</span>
+<span id="cb35-531"><a href="#cb35-531" aria-hidden="true" tabindex="-1"></a>     <span class="fu">list</span>(<span class="at">N =</span> <span class="fu">length</span>(bill_length_center),</span>
+<span id="cb35-532"><a href="#cb35-532" aria-hidden="true" tabindex="-1"></a>          <span class="at">bill_len =</span> bill_length_center,</span>
+<span id="cb35-533"><a href="#cb35-533" aria-hidden="true" tabindex="-1"></a>          <span class="at">bill_dep =</span> bill_depth_mm,</span>
+<span id="cb35-534"><a href="#cb35-534" aria-hidden="true" tabindex="-1"></a>          <span class="at">npost =</span> <span class="dv">6</span>,</span>
+<span id="cb35-535"><a href="#cb35-535" aria-hidden="true" tabindex="-1"></a>          <span class="at">pred_values =</span> modelr<span class="sc">::</span><span class="fu">seq_range</span>(penguins_no_NA<span class="sc">$</span>bill_length_center, <span class="at">n =</span> <span class="dv">6</span>)</span>
+<span id="cb35-536"><a href="#cb35-536" aria-hidden="true" tabindex="-1"></a>          ))</span>
+<span id="cb35-537"><a href="#cb35-537" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-538"><a href="#cb35-538" aria-hidden="true" tabindex="-1"></a>bill_norm_reg <span class="ot">&lt;-</span> <span class="fu">sampling</span>(normal_regression,</span>
+<span id="cb35-539"><a href="#cb35-539" aria-hidden="true" tabindex="-1"></a>                          <span class="at">data =</span> data_list, </span>
+<span id="cb35-540"><a href="#cb35-540" aria-hidden="true" tabindex="-1"></a>                          <span class="at">refresh =</span> <span class="dv">0</span>)</span>
+<span id="cb35-541"><a href="#cb35-541" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb35-542"><a href="#cb35-542" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-543"><a href="#cb35-543" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-546"><a href="#cb35-546" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb35-547"><a href="#cb35-547" aria-hidden="true" tabindex="-1"></a><span class="co">#| layout-ncol: 2</span></span>
+<span id="cb35-548"><a href="#cb35-548" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb35-549"><a href="#cb35-549" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-550"><a href="#cb35-550" aria-hidden="true" tabindex="-1"></a>bill_posterior <span class="ot">&lt;-</span> bill_norm_reg <span class="sc">|&gt;</span> </span>
+<span id="cb35-551"><a href="#cb35-551" aria-hidden="true" tabindex="-1"></a>  tidybayes<span class="sc">::</span><span class="fu">spread_rvars</span>(post_bill_dep_average[i],</span>
+<span id="cb35-552"><a href="#cb35-552" aria-hidden="true" tabindex="-1"></a>                          post_bill_dep_obs[i]) <span class="sc">|&gt;</span></span>
+<span id="cb35-553"><a href="#cb35-553" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">bill_length =</span> data_list<span class="sc">$</span>pred_values[i]) </span>
+<span id="cb35-554"><a href="#cb35-554" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-555"><a href="#cb35-555" aria-hidden="true" tabindex="-1"></a>bill_posterior <span class="sc">|&gt;</span> </span>
+<span id="cb35-556"><a href="#cb35-556" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> bill_length, <span class="at">dist =</span> post_bill_dep_average)) <span class="sc">+</span> </span>
+<span id="cb35-557"><a href="#cb35-557" aria-hidden="true" tabindex="-1"></a>  tidybayes<span class="sc">::</span><span class="fu">stat_lineribbon</span>() <span class="sc">+</span> </span>
+<span id="cb35-558"><a href="#cb35-558" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">x =</span> bill_length_center, <span class="at">y =</span> bill_depth_mm),</span>
+<span id="cb35-559"><a href="#cb35-559" aria-hidden="true" tabindex="-1"></a>             <span class="at">data =</span> penguins_no_NA, </span>
+<span id="cb35-560"><a href="#cb35-560" aria-hidden="true" tabindex="-1"></a>             <span class="at">inherit.aes =</span> <span class="cn">FALSE</span>) <span class="sc">+</span> </span>
+<span id="cb35-561"><a href="#cb35-561" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_brewer</span>(<span class="at">palette =</span> <span class="st">"Greens"</span>, <span class="at">direction =</span> <span class="sc">-</span><span class="dv">1</span>, <span class="at">guide =</span> <span class="st">"none"</span>) <span class="sc">+</span> </span>
+<span id="cb35-562"><a href="#cb35-562" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Average response"</span>)</span>
+<span id="cb35-563"><a href="#cb35-563" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-564"><a href="#cb35-564" aria-hidden="true" tabindex="-1"></a>bill_posterior <span class="sc">|&gt;</span> </span>
+<span id="cb35-565"><a href="#cb35-565" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> bill_length, <span class="at">dist =</span> post_bill_dep_obs)) <span class="sc">+</span> </span>
+<span id="cb35-566"><a href="#cb35-566" aria-hidden="true" tabindex="-1"></a>  tidybayes<span class="sc">::</span><span class="fu">stat_lineribbon</span>() <span class="sc">+</span> </span>
+<span id="cb35-567"><a href="#cb35-567" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">x =</span> bill_length_center, <span class="at">y =</span> bill_depth_mm),</span>
+<span id="cb35-568"><a href="#cb35-568" aria-hidden="true" tabindex="-1"></a>             <span class="at">data =</span> penguins_no_NA, </span>
+<span id="cb35-569"><a href="#cb35-569" aria-hidden="true" tabindex="-1"></a>             <span class="at">inherit.aes =</span> <span class="cn">FALSE</span>) <span class="sc">+</span> </span>
+<span id="cb35-570"><a href="#cb35-570" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_brewer</span>(<span class="at">palette =</span> <span class="st">"Greens"</span>, <span class="at">direction =</span> <span class="sc">-</span><span class="dv">1</span>, <span class="at">guide =</span> <span class="st">"none"</span>) <span class="sc">+</span></span>
+<span id="cb35-571"><a href="#cb35-571" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Predicted observations"</span>)</span>
+<span id="cb35-572"><a href="#cb35-572" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-573"><a href="#cb35-573" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb35-574"><a href="#cb35-574" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-575"><a href="#cb35-575" aria-hidden="true" tabindex="-1"></a>:::{.callout-tip}</span>
+<span id="cb35-576"><a href="#cb35-576" aria-hidden="true" tabindex="-1"></a><span class="fu">### EXERCISE</span></span>
+<span id="cb35-577"><a href="#cb35-577" aria-hidden="true" tabindex="-1"></a>Extend this model to include species. Specifically, let each species have its own value of the <span class="in">`intercept`</span>. This involves combining this regression example with the previous activity on discrete predictors.</span>
+<span id="cb35-578"><a href="#cb35-578" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-579"><a href="#cb35-579" aria-hidden="true" tabindex="-1"></a>When you're done, look at the resulting summary of coefficients. What do you notice that's different?</span>
+<span id="cb35-580"><a href="#cb35-580" aria-hidden="true" tabindex="-1"></a>::: </span>
+<span id="cb35-581"><a href="#cb35-581" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-582"><a href="#cb35-582" aria-hidden="true" tabindex="-1"></a>:::{.callout-note collapse="true"}</span>
+<span id="cb35-583"><a href="#cb35-583" aria-hidden="true" tabindex="-1"></a><span class="fu">### SOLUTION</span></span>
+<span id="cb35-584"><a href="#cb35-584" aria-hidden="true" tabindex="-1"></a><span class="in">```{r, include=TRUE}</span></span>
+<span id="cb35-585"><a href="#cb35-585" aria-hidden="true" tabindex="-1"></a><span class="co">#| class-output: stan</span></span>
+<span id="cb35-586"><a href="#cb35-586" aria-hidden="true" tabindex="-1"></a>normal_regression_spp <span class="ot">&lt;-</span> <span class="fu">stan_model</span>(<span class="at">file =</span> here<span class="sc">::</span><span class="fu">here</span>(<span class="st">"topics/02_regression/normal_regression_spp.stan"</span>),</span>
+<span id="cb35-587"><a href="#cb35-587" aria-hidden="true" tabindex="-1"></a>                                    <span class="at">model_name =</span> <span class="st">"normal_regression_spp"</span>)</span>
+<span id="cb35-588"><a href="#cb35-588" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-589"><a href="#cb35-589" aria-hidden="true" tabindex="-1"></a>normal_regression_spp</span>
+<span id="cb35-590"><a href="#cb35-590" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb35-591"><a href="#cb35-591" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-592"><a href="#cb35-592" aria-hidden="true" tabindex="-1"></a>We set up a list for this model just as we did before. </span>
+<span id="cb35-593"><a href="#cb35-593" aria-hidden="true" tabindex="-1"></a>Note that this time we are using TRIPLE the <span class="in">`pred_values`</span>, because we want to run independent predictions for each species.</span>
+<span id="cb35-594"><a href="#cb35-594" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-595"><a href="#cb35-595" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-598"><a href="#cb35-598" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb35-599"><a href="#cb35-599" aria-hidden="true" tabindex="-1"></a>bill_vec <span class="ot">&lt;-</span> modelr<span class="sc">::</span><span class="fu">seq_range</span>(penguins_no_NA<span class="sc">$</span>bill_length_center, <span class="at">n =</span> <span class="dv">6</span>)</span>
+<span id="cb35-600"><a href="#cb35-600" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-601"><a href="#cb35-601" aria-hidden="true" tabindex="-1"></a>data_list_spp <span class="ot">&lt;-</span> <span class="fu">with</span>(penguins_no_NA,</span>
+<span id="cb35-602"><a href="#cb35-602" aria-hidden="true" tabindex="-1"></a>     <span class="fu">list</span>(<span class="at">N =</span> <span class="fu">length</span>(bill_length_center),</span>
+<span id="cb35-603"><a href="#cb35-603" aria-hidden="true" tabindex="-1"></a>          <span class="at">bill_len =</span> bill_length_center,</span>
+<span id="cb35-604"><a href="#cb35-604" aria-hidden="true" tabindex="-1"></a>          <span class="at">bill_dep =</span> bill_depth_mm,</span>
+<span id="cb35-605"><a href="#cb35-605" aria-hidden="true" tabindex="-1"></a>          <span class="at">spp_id =</span> <span class="fu">as.numeric</span>(<span class="fu">as.factor</span>(species)),</span>
+<span id="cb35-606"><a href="#cb35-606" aria-hidden="true" tabindex="-1"></a>          <span class="at">npost =</span> <span class="dv">3</span><span class="sc">*</span><span class="dv">6</span>,</span>
+<span id="cb35-607"><a href="#cb35-607" aria-hidden="true" tabindex="-1"></a>          <span class="at">pred_values =</span> <span class="fu">rep</span>(bill_vec, <span class="dv">3</span>),</span>
+<span id="cb35-608"><a href="#cb35-608" aria-hidden="true" tabindex="-1"></a>          <span class="at">pred_spp_id =</span> <span class="fu">rep</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>, <span class="at">each =</span> <span class="dv">6</span>)</span>
+<span id="cb35-609"><a href="#cb35-609" aria-hidden="true" tabindex="-1"></a>          ))</span>
+<span id="cb35-610"><a href="#cb35-610" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-611"><a href="#cb35-611" aria-hidden="true" tabindex="-1"></a>normal_reg_spp_post <span class="ot">&lt;-</span> <span class="fu">sampling</span>(normal_regression_spp,</span>
+<span id="cb35-612"><a href="#cb35-612" aria-hidden="true" tabindex="-1"></a>                                <span class="at">data =</span> data_list_spp, <span class="at">refresh =</span> <span class="dv">0</span>)</span>
+<span id="cb35-613"><a href="#cb35-613" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-614"><a href="#cb35-614" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb35-615"><a href="#cb35-615" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-616"><a href="#cb35-616" aria-hidden="true" tabindex="-1"></a>Note that the sign of the slope is different now! </span>
+<span id="cb35-617"><a href="#cb35-617" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-620"><a href="#cb35-620" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb35-621"><a href="#cb35-621" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(normal_reg_spp_post)<span class="sc">$</span>summary <span class="sc">|&gt;</span> </span>
+<span id="cb35-622"><a href="#cb35-622" aria-hidden="true" tabindex="-1"></a>  <span class="fu">head</span>(<span class="dv">5</span>) <span class="sc">|&gt;</span></span>
+<span id="cb35-623"><a href="#cb35-623" aria-hidden="true" tabindex="-1"></a>  knitr<span class="sc">::</span><span class="fu">kable</span>()</span>
+<span id="cb35-624"><a href="#cb35-624" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb35-625"><a href="#cb35-625" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-626"><a href="#cb35-626" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb35-627"><a href="#cb35-627" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-628"><a href="#cb35-628" aria-hidden="true" tabindex="-1"></a><span class="fu">### Plotting posterior predictions</span></span>
+<span id="cb35-629"><a href="#cb35-629" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-630"><a href="#cb35-630" aria-hidden="true" tabindex="-1"></a>Using <span class="in">`stat_lineribbon()`</span>, let's plot the average and predicted intervals for this regression.</span>
+<span id="cb35-631"><a href="#cb35-631" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-634"><a href="#cb35-634" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb35-635"><a href="#cb35-635" aria-hidden="true" tabindex="-1"></a><span class="co">#| layout-ncol: 2</span></span>
+<span id="cb35-636"><a href="#cb35-636" aria-hidden="true" tabindex="-1"></a><span class="co">#| warning: false</span></span>
+<span id="cb35-637"><a href="#cb35-637" aria-hidden="true" tabindex="-1"></a>bill_posterior <span class="ot">&lt;-</span> normal_reg_spp_post <span class="sc">|&gt;</span> </span>
+<span id="cb35-638"><a href="#cb35-638" aria-hidden="true" tabindex="-1"></a>  tidybayes<span class="sc">::</span><span class="fu">spread_rvars</span>(post_bill_dep_average[i],</span>
+<span id="cb35-639"><a href="#cb35-639" aria-hidden="true" tabindex="-1"></a>                          post_bill_dep_obs[i]) <span class="sc">|&gt;</span></span>
+<span id="cb35-640"><a href="#cb35-640" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">bill_length =</span> data_list_spp<span class="sc">$</span>pred_values[i],</span>
+<span id="cb35-641"><a href="#cb35-641" aria-hidden="true" tabindex="-1"></a>         <span class="at">spp =</span> data_list_spp<span class="sc">$</span>pred_spp_id) <span class="sc">|&gt;</span> </span>
+<span id="cb35-642"><a href="#cb35-642" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">spp =</span> <span class="fu">as.factor</span>(<span class="fu">levels</span>(penguins<span class="sc">$</span>species)[spp]))</span>
+<span id="cb35-643"><a href="#cb35-643" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-644"><a href="#cb35-644" aria-hidden="true" tabindex="-1"></a>bill_posterior <span class="sc">|&gt;</span> </span>
+<span id="cb35-645"><a href="#cb35-645" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> bill_length,</span>
+<span id="cb35-646"><a href="#cb35-646" aria-hidden="true" tabindex="-1"></a>             <span class="at">ydist =</span> post_bill_dep_average,</span>
+<span id="cb35-647"><a href="#cb35-647" aria-hidden="true" tabindex="-1"></a>             <span class="at">fill =</span> spp, </span>
+<span id="cb35-648"><a href="#cb35-648" aria-hidden="true" tabindex="-1"></a>             <span class="at">colour =</span> spp)) <span class="sc">+</span> </span>
+<span id="cb35-649"><a href="#cb35-649" aria-hidden="true" tabindex="-1"></a>  tidybayes<span class="sc">::</span><span class="fu">stat_lineribbon</span>() <span class="sc">+</span> </span>
+<span id="cb35-650"><a href="#cb35-650" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">x =</span> bill_length_center,</span>
+<span id="cb35-651"><a href="#cb35-651" aria-hidden="true" tabindex="-1"></a>                 <span class="at">y =</span> bill_depth_mm,</span>
+<span id="cb35-652"><a href="#cb35-652" aria-hidden="true" tabindex="-1"></a>                 <span class="at">fill =</span> species, <span class="at">colour =</span> species),</span>
+<span id="cb35-653"><a href="#cb35-653" aria-hidden="true" tabindex="-1"></a>             <span class="at">data =</span> penguins_no_NA, </span>
+<span id="cb35-654"><a href="#cb35-654" aria-hidden="true" tabindex="-1"></a>             <span class="at">inherit.aes =</span> <span class="cn">FALSE</span>) <span class="sc">+</span>   </span>
+<span id="cb35-655"><a href="#cb35-655" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_brewer</span>(<span class="at">palette =</span> <span class="st">"Set2"</span>) <span class="sc">+</span></span>
+<span id="cb35-656"><a href="#cb35-656" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_brewer</span>(<span class="at">palette =</span> <span class="st">"Dark2"</span>) <span class="sc">+</span> </span>
+<span id="cb35-657"><a href="#cb35-657" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Average response"</span>)</span>
+<span id="cb35-658"><a href="#cb35-658" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-659"><a href="#cb35-659" aria-hidden="true" tabindex="-1"></a>bill_posterior <span class="sc">|&gt;</span> </span>
+<span id="cb35-660"><a href="#cb35-660" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> bill_length,</span>
+<span id="cb35-661"><a href="#cb35-661" aria-hidden="true" tabindex="-1"></a>             <span class="at">dist =</span> post_bill_dep_obs,</span>
+<span id="cb35-662"><a href="#cb35-662" aria-hidden="true" tabindex="-1"></a>             <span class="at">fill =</span> spp,</span>
+<span id="cb35-663"><a href="#cb35-663" aria-hidden="true" tabindex="-1"></a>             <span class="at">colour =</span> spp)) <span class="sc">+</span> </span>
+<span id="cb35-664"><a href="#cb35-664" aria-hidden="true" tabindex="-1"></a>  tidybayes<span class="sc">::</span><span class="fu">stat_lineribbon</span>() <span class="sc">+</span> </span>
+<span id="cb35-665"><a href="#cb35-665" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">x =</span> bill_length_center,</span>
+<span id="cb35-666"><a href="#cb35-666" aria-hidden="true" tabindex="-1"></a>                 <span class="at">y =</span> bill_depth_mm,</span>
+<span id="cb35-667"><a href="#cb35-667" aria-hidden="true" tabindex="-1"></a>                 <span class="at">colour =</span> species),</span>
+<span id="cb35-668"><a href="#cb35-668" aria-hidden="true" tabindex="-1"></a>             <span class="at">data =</span> penguins_no_NA, </span>
+<span id="cb35-669"><a href="#cb35-669" aria-hidden="true" tabindex="-1"></a>             <span class="at">inherit.aes =</span> <span class="cn">FALSE</span>) <span class="sc">+</span> </span>
+<span id="cb35-670"><a href="#cb35-670" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_brewer</span>(<span class="at">palette =</span> <span class="st">"Set2"</span>) <span class="sc">+</span></span>
+<span id="cb35-671"><a href="#cb35-671" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_brewer</span>(<span class="at">palette =</span> <span class="st">"Dark2"</span>) <span class="sc">+</span> </span>
+<span id="cb35-672"><a href="#cb35-672" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Predicted observations"</span>) <span class="sc">+</span> </span>
+<span id="cb35-673"><a href="#cb35-673" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>spp, <span class="at">ncol =</span> <span class="dv">1</span>)</span>
+<span id="cb35-674"><a href="#cb35-674" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-675"><a href="#cb35-675" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb35-676"><a href="#cb35-676" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-677"><a href="#cb35-677" aria-hidden="true" tabindex="-1"></a><span class="fu">## Exercise! </span></span>
+<span id="cb35-678"><a href="#cb35-678" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-679"><a href="#cb35-679" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>We have one model without species identity as an independent variable, and one which includes species. Look at the difference in $\sigma$ between these two models. Why did the value change? </span>
+<span id="cb35-680"><a href="#cb35-680" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>**Posterior predictions** Edit the generated quantities blocks of <span class="in">`normal_regression.stan`</span> and <span class="in">`normal_regression_spp.stan`</span>  to create replicate observations for all N observations (that is, <span class="in">`yrep`</span> as we did in the model of <span class="co">[</span><span class="ot">bill depth previously</span><span class="co">](../discrete_predictor/index.qmd)</span>). Use this to compare the models using <span class="in">`bayesplot::ppc_dens_overlay()`</span> or another function from the bayesplot package.</span>
+<span id="cb35-681"><a href="#cb35-681" aria-hidden="true" tabindex="-1"></a></span>
 </code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
 </div></div></div></div></div>
 </div> <!-- /content -->
