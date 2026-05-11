@@ -30,23 +30,6 @@ install.packages(c(
 ), dependencies = TRUE)
 ```
 
-## Load packages
-
-```{r}
-#| label: setup
-library(tidyverse)
-library(rstan)
-library(brms)
-library(bayesplot)
-library(tidybayes)
-library(posterior)
-library(palmerpenguins)
-
-rstan_options(auto_write = TRUE)          # avoid recompiling unchanged models
-options(mc.cores = parallel::detectCores())  # sample chains in parallel
-bayesplot::color_scheme_set("brightblue")
-```
-
 ## Why Bayesian statistics for ecologists?
 
 Have you ever found yourself with a detailed ecological dataset and a hypothesis you are excited
@@ -126,4 +109,6 @@ Optional content! Choose your own adventure!
 * [Hierarchy on the slope -- partial pooling demonstration](topics/correlated_effects)
 * [Estimating functions from data - Gaussian processes in Stan](topics/04_gp)
 * [Phylogenetic regression and missing data](topics/04-phylo)
+* [Nonlinear models of growth](topics/discrete-vb-brms-stan/)
+* [Artisanal model for zero-inflated aphid population growth](topics/useful-zeros/)
 

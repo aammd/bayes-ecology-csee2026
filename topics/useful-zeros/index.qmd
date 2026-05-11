@@ -1,0 +1,288 @@
+---
+title: "Andrew tries Quarto"
+author: "Andrew MacDonald"
+description: |
+  Quick notes on how to make a blog with Quarto and also targets.
+date: 11 Nov 2022
+editor: source
+categories: [UdeS, stan]
+draft: true
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, eval=TRUE, message=FALSE, warning=FALSE}
+library(targets)
+library(ggplot2)
+library(tidyverse)
+library(tidybayes)
+suppressPackageStartupMessages(library(rstan))
+rstan_options("auto_write" = TRUE)
+options(mc.cores = parallel::detectCores())
+
+```
+
+## Adding block effects
+
+This experiment also has block effects! Each block has only one replicate of each genotype. It might happen that each block has a slightly different average growth rate for all aphids in the block, due to minor environmental differences between the replicates:
+
+The assumption here is that both aphids on the same plant have exactly the same growth rate. The different plants give the aphids different growth rates based on three sources of variation: the genotype of the plant, the block it is in, and additional, unmeasured variation between plants.
+
+$$
+\begin{align}
+y_i &\sim \text{Poisson}(\lambda_i) \\
+\log(\lambda_i) &= \eta_i \\
+\eta_i &= \bar{r} + \alpha_{\text{genotype}[i]} + \alpha_{\text{block}[i]} + \alpha_{\text{pot}[i]} \\
+\alpha_{\text{genotype},i} &\sim \mathcal{N}(0, \sigma_{\text{genotype}}) \\
+\alpha_{\text{block},i}    &\sim \mathcal{N}(0, \sigma_{\text{block}}) \\
+\alpha_{\text{pot},i}      &\sim \mathcal{N}(0, \sigma_{\text{pot}}) \\
+\sigma_{\text{genotype}}   &\sim \text{Exponential}(3) \\
+\sigma_{\text{block}}      &\sim \text{Exponential}(3) \\
+\sigma_{\text{pot}}        &\sim \text{Exponential}(3)
+\end{align}
+
+$$
+
+
+```{r}
+
+simulate_genotypes_blocks <- function(
+    ngenotypes = 300, 
+    nblock = 3, 
+    r_bar = 1.3, 
+    r_geno_sd = .5, 
+    r_block_sd = .2,
+    r_pot_sd = .1,
+    surv_prob = .7){
+  
+  r_geno  <- rnorm(n = ngenotypes,        mean = 0, sd = r_geno_sd)
+  r_block <- rnorm(n = nblock,            mean = 0, sd = r_block_sd)
+  r_pot   <- rnorm(n = nblock*ngenotypes, mean = 0, sd = r_pot_sd)
+  
+  aphid_geno_block_data <- 
+    expand_grid(
+      block_id = 1:nblock, 
+      genotype_id = 1:ngenotypes) |> 
+    mutate(pot_id = seq_len(ngenotypes*nblock)) |> 
+    expand_grid(  
+      first_aphid = 1:2,
+    ) |>
+    mutate(
+      r_i = r_bar + r_geno[genotype_id] + r_block[block_id] + r_pot[pot_id],
+      expect_aphids = 1*exp(r_i*2),
+      obs_aphids = rpois(n = length(expect_aphids), 
+                         lambda = expect_aphids)
+    )
+  
+  ## sum the offspring of each initial female into a total!
+  ## kill the original aphids at random and all their descendents! 
+  aphid_clone_total <- aphid_geno_block_data |> 
+    mutate(surv = rbinom(length(obs_aphids), 
+                         size = 1, 
+                         prob = surv_prob),
+           obs_aphids_alive = obs_aphids * surv) |> 
+    group_by(block_id, genotype_id, pot_id, r_i) |> 
+    summarize(
+      expect_aphids_tot = sum(expect_aphids),
+      obs_aphids_tot = sum(obs_aphids_alive)) |> 
+    ungroup()
+  
+  return(aphid_clone_total)
+}
+
+```
+
+```{r}
+
+simulate_genotypes_blocks() |> 
+  ggplot(aes(x = obs_aphids_tot)) + 
+  geom_histogram() + 
+  facet_wrap(~block_id)
+```
+
+```{r}
+mixture_block_clone_obs <- stan_model(file = here::here(
+  "topics/useful-zeros/mixture_block_clone_obs.stan"
+  ))
+
+mixture_block_clone_obs
+```
+
+
+```{r}
+simulated_experiment <- simulate_genotypes_blocks(nblock = 10, ngenotypes = 35, r_pot_sd = .4)
+
+simulated_experiment_samp <- sampling(mixture_block_clone_obs, data = list(
+  n = nrow(simulated_experiment),
+  time = 2,
+  nblock = max(simulated_experiment$block_id),
+  ngenotype = max(simulated_experiment$genotype_id),
+  abd_obs = simulated_experiment$obs_aphids_tot,
+  genotype_id = simulated_experiment$genotype_id,
+  block_id = simulated_experiment$block_id
+))
+```
+
+on a first attempt, really not very efficient or successful! let's look at the summary
+
+```{r}
+summary(simulated_experiment_samp, pars = c("sd_pot", "sd_block", "sd_genotype"))$summary
+```
+
+## ways to fix or improve
+
+* non centered parameterization for some specific variance terms
+* variance partitioning model
+
+```{r}
+mixture_ncp_block <- stan_model(file = here::here(
+  "topics/useful-zeros/mixture_ncp_block.stan"
+  ))
+mixture_ncp_block
+```
+
+```{r}
+mixture_ncp_block_samp <- sampling(mixture_ncp_block, data = list(
+  n = nrow(simulated_experiment),
+  time = 2,
+  nblock = max(simulated_experiment$block_id),
+  ngenotype = max(simulated_experiment$genotype_id),
+  abd_obs = simulated_experiment$obs_aphids_tot,
+  genotype_id = simulated_experiment$genotype_id,
+  block_id = simulated_experiment$block_id
+))
+```
+
+```{r}
+summary(mixture_ncp_block_samp, pars = c("sd_pot", "sd_block", "sd_genotype"))$summary
+```
+
+```{r}
+mixture_ncp_block_pot <- stan_model(file = here::here(
+  "topics/useful-zeros/mixture_ncp_block_pot.stan"
+  ))
+mixture_ncp_block_pot
+```
+
+```{r}
+mixture_ncp_block_pot_samp <- sampling(mixture_ncp_block_pot, data = list(
+  n = nrow(simulated_experiment),
+  time = 2,
+  nblock = max(simulated_experiment$block_id),
+  ngenotype = max(simulated_experiment$genotype_id),
+  abd_obs = simulated_experiment$obs_aphids_tot,
+  genotype_id = simulated_experiment$genotype_id,
+  block_id = simulated_experiment$block_id
+))
+```
+
+```{r}
+summary(mixture_ncp_block_pot_samp, pars = c("sd_pot", "sd_block", "sd_genotype"))$summary
+```
+
+Still getting rhat warnings but no more divergent iterations! time to try all of them as ncp
+
+```{r}
+mixture_ncp_block_pot_geno <- stan_model(file = here::here(
+  "topics/useful-zeros/mixture_ncp_block_pot_geno.stan"
+  ))
+mixture_ncp_block_pot_geno
+```
+
+```{r}
+mixture_ncp_block_pot_geno_samp <- sampling(mixture_ncp_block_pot_geno, data = list(
+  n = nrow(simulated_experiment),
+  time = 2,
+  nblock = max(simulated_experiment$block_id),
+  ngenotype = max(simulated_experiment$genotype_id),
+  abd_obs = simulated_experiment$obs_aphids_tot,
+  genotype_id = simulated_experiment$genotype_id,
+  block_id = simulated_experiment$block_id
+))
+```
+
+```{r}
+summary(mixture_ncp_block_pot_geno_samp, 
+        pars = c("r_bar", 
+                 "sd_pot", "sd_block", 
+                 "sd_genotype"))$summary
+```
+
+
+## variance partitioning model
+
+
+```{r}
+mixture_varpart <- stan_model(file = here::here(
+  "topics/useful-zeros/mixture_varpart.stan"
+  ))
+mixture_varpart
+```
+
+```{r}
+mixture_varpart_samp <- sampling(mixture_varpart, data = list(
+  n = nrow(simulated_experiment),
+  time = 2,
+  nblock = max(simulated_experiment$block_id),
+  ngenotype = max(simulated_experiment$genotype_id),
+  abd_obs = simulated_experiment$obs_aphids_tot,
+  genotype_id = simulated_experiment$genotype_id,
+  block_id = simulated_experiment$block_id
+))
+```
+
+```{r}
+summary(mixture_varpart_samp, 
+        pars = c("r_bar", 
+                 "prop_var", "sd_total"))$summary
+```
+
+Wow what a spectacular failure! 
+
+```{r}
+curve(log(1 +exp(-x)), xlim = c(1,10))
+```
+
+## with gq
+
+```{r}
+mixture_ncp_block_gq <- stan_model(file = here::here(
+  "topics/useful-zeros/mixture_ncp_block_gq.stan"
+  ))
+mixture_ncp_block_gq
+```
+
+```{r}
+mixture_ncp_block_gq_samp <- sampling(mixture_ncp_block_gq, data = list(
+  n = nrow(simulated_experiment),
+  time = 2,
+  nblock = max(simulated_experiment$block_id),
+  ngenotype = max(simulated_experiment$genotype_id),
+  abd_obs = simulated_experiment$obs_aphids_tot,
+  genotype_id = simulated_experiment$genotype_id,
+  block_id = simulated_experiment$block_id
+))
+```
+
+```{r}
+summary(mixture_ncp_block_gq_samp, pars = c("r_bar", "sd_pot", "sd_block", "sd_genotype"))$summary
+```
+
+```{r}
+bayesplot::mcmc_areas(mixture_ncp_block_gq_samp, pars = "h") + 
+  coord_cartesian(xlim = c(0, 1))
+```
+
+
+```{r}
+mixture_ncp_block_gq_samp_yrep <- rstan::extract(mixture_ncp_block_gq_samp, pars = "yrep")
+bayesplot::ppc_dens_overlay(y = simulated_experiment$obs_aphids_tot,
+                            yrep = head(mixture_ncp_block_gq_samp_yrep$yrep, 50))
+```
+
+
+```{r}
+summary(mixture_ncp_block_gq_samp, pars = c("r_avg_genotype"))$summary
+```
+
+
